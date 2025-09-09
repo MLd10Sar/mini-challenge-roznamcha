@@ -1,8 +1,8 @@
 :root {
     --primary-color: #4A148C;
-    --sale-color: #28a745;      /* Green */
-    --expense-color: #dc3545;   /* Red */
-    --inventory-color: #007bff; /* Blue */
+    --sale-color: #28a745;
+    --expense-color: #dc3545;
+    --inventory-color: #007bff;
     --path-color: #e9ecef;
     --light-text: #ffffff;
 }
@@ -14,35 +14,35 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-}
-.game-board {
-    background: #fff;
-    width: 90%;
-    max-width: 420px;
-    border-radius: 20px;
     padding: 20px;
+    box-sizing: border-box;
+}
+.game-container {
+    background: #fff;
+    width: 95%;
+    max-width: 450px;
+    border-radius: 20px;
+    padding: 25px;
     box-shadow: 0 15px 40px rgba(0,0,0,0.3);
     text-align: center;
 }
 .header h1 { color: var(--primary-color); font-size: 2.5rem; margin: 0; }
 .header p { color: #6c757d; font-size: 1.1rem; margin-top: 5px; }
 
-.path-container {
-    position: relative;
-    padding: 20px 0;
-}
-.path {
+.board {
+    margin-top: 25px;
+    padding: 10px;
+    background-color: var(--path-color);
+    border-radius: 10px;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     grid-template-rows: repeat(2, 1fr);
     gap: 10px;
-    background-color: var(--path-color);
-    padding: 10px;
-    border-radius: 10px;
+    position: relative; /* For positioning the player piece */
 }
 .space {
     width: 100%;
-    height: 60px;
+    height: 65px;
     border-radius: 8px;
     display: flex;
     justify-content: center;
@@ -50,49 +50,47 @@ body {
     font-weight: 700;
     font-size: 0.9rem;
     color: #333;
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,0.15);
 }
 .space.start, .space.end { background-color: #ffc107; }
-.space.sale { background-color: #c8e6c9; }      /* Light Green */
-.space.expense { background-color: #ffcdd2; }  /* Light Red */
-.space.inventory { background-color: #bbdefb; } /* Light Blue */
+.space.sale { background-color: #c8e6c9; }
+.space.expense { background-color: #ffcdd2; }
+.space.inventory { background-color: #bbdefb; }
 
 .player-piece {
     width: 30px;
     height: 30px;
     background-color: var(--primary-color);
-    border: 3px solid #fff;
+    border: 4px solid #fff;
     border-radius: 50%;
     position: absolute;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Bouncy transition */
+    z-index: 10;
 }
 .controls {
-    margin-top: 20px;
+    margin-top: 25px;
     display: flex;
     gap: 20px;
     align-items: center;
 }
-.dice-container {
-    perspective: 300px;
-}
+.dice-container { perspective: 400px; }
 .dice {
-    width: 60px;
-    height: 60px;
-    font-size: 3rem;
+    width: 70px;
+    height: 70px;
+    font-size: 3.5rem;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     cursor: pointer;
     background-color: var(--secondary-color);
     color: var(--light-text);
     transition: transform 0.5s;
     transform-style: preserve-3d;
 }
-.dice.rolling {
-    animation: roll 0.5s;
-}
+.dice.rolling { animation: roll 0.5s; }
 @keyframes roll {
-    0% { transform: rotateX(0deg) rotateY(0deg); }
-    100% { transform: rotateX(360deg) rotateY(360deg); }
+    from { transform: rotateX(0deg) rotateY(0deg); }
+    to { transform: rotateX(720deg) rotateY(720deg); }
 }
 .info-box {
     flex: 1;
@@ -103,6 +101,7 @@ body {
     font-weight: 700;
     text-align: right;
 }
+.info-box strong { color: var(--primary-color); }
 /* Final Screen Styles */
 .final-screen { position: fixed; inset: 0; background: rgba(0,0,0,0.85); color: #fff; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; z-index: 100; opacity: 0; transition: opacity 0.5s; }
 .final-screen.show { display: flex; opacity: 1; }

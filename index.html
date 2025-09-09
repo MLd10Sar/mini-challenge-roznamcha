@@ -8,25 +8,24 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="game-board">
+    <div class="game-container">
         <div class="header">
             <h1>بازی روزنامچه</h1>
             <p>با هر معامله، کسب و کارتان را رشد دهید!</p>
         </div>
 
-        <div class="path-container">
-            <div class="path">
-                <div class="space start">شروع</div>
-                <div class="space sale">فروش</div>
-                <div class="space inventory">گدام</div>
-                <div class="space expense">مصرف</div>
-                <div class="space sale">فروش</div>
-                <div class="space sale">فروش</div>
-                <div class="space inventory">گدام</div>
-                <div class="space expense">کرایه</div>
-                <div class="space sale">فروش</div>
-                <div class="space end">مفاد!</div>
-            </div>
+        <div class="board">
+            <div class="space start" data-space="0">شروع</div>
+            <div class="space sale" data-space="1">فروش</div>
+            <div class="space inventory" data-space="2">گدام</div>
+            <div class="space expense" data-space="3">مصرف</div>
+            <div class="space sale" data-space="4">فروش</div>
+            <div class="space sale" data-space="9">فروش</div>
+            <div class="space inventory" data-space="8">گدام</div>
+            <div class="space expense" data-space="7">کرایه</div>
+            <div class="space sale" data-space="6">فروش</div>
+            <div class="space end" data-space="5">مفاد!</div>
+            
             <div class="player-piece" id="player-piece"></div>
         </div>
 
