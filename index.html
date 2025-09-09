@@ -14,41 +14,37 @@
             <p>با هر معامله، کسب و کارتان را رشد دهید!</p>
         </div>
 
-        <div class="board">
-            <div class="space start" data-space="0">شروع</div>
-            <div class="space sale" data-space="1">فروش</div>
-            <div class="space inventory" data-space="2">گدام</div>
-            <div class="space expense" data-space="3">مصرف</div>
-            <div class="space sale" data-space="4">فروش</div>
-            <div class="space sale" data-space="9">فروش</div>
-            <div class="space inventory" data-space="8">گدام</div>
-            <div class="space expense" data-space="7">کرایه</div>
-            <div class="space sale" data-space="6">فروش</div>
-            <div class="space end" data-space="5">مفاد!</div>
-            
-            <div class="player-piece" id="player-piece"></div>
+        <div class="board-wrapper">
+            <div class="board">
+                <!-- 1. The SVG Path - This is the track -->
+                <svg viewBox="0 0 400 300" class="game-path-svg">
+                    <path id="game-path" d="M 50 50 H 350 V 150 H 50 V 250 H 350" stroke="transparent" fill="none" />
+                </svg>
+
+                <!-- 2. The Spaces - Placed on top of the path -->
+                <div class="space-container">
+                    <!-- Spaces will be generated here by JavaScript -->
+                </div>
+                
+                <!-- 3. The Player Piece -->
+                <div class="player-piece" id="player-piece"></div>
+            </div>
         </div>
 
         <div class="controls">
-            <div class="dice-container">
-                <button class="dice" id="dice-roll-button">🎲</button>
-            </div>
-            <div class="info-box">
-                <div id="info-text">برای شروع، زار را بیندازید!</div>
-            </div>
+            <button class="dice" id="dice-roll-button">🎲</button>
+            <div class="info-box" id="info-box">برای شروع، زار را بیندازید!</div>
         </div>
     </div>
     
     <!-- Final "Win" Screen -->
     <div class="final-screen" id="final-screen">
-        <div class="final-content">
-            <h1>تبریک!</h1>
-            <p>شما به مفاد رسیدید! روزنامچه به شما کمک میکند تا همیشه برنده باشید.</p>
-            <a href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" class="download-button">دانلود نسخه کامل</a>
-        </div>
+        <h1>تبریک!</h1>
+        <p>شما به مفاد رسیدید! روزنامچه به شما کمک میکند تا همیشه برنده باشید.</p>
+        <a href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" class="download-button">دانلود نسخه کامل</a>
     </div>
     
-  <!-- Audio files -->
+    <!-- Audio files -->
     <audio id="sound-roll" src="https://assets.mixkit.co/sfx/preview/mixkit-dice-roll-1721.mp3" preload="auto"></audio>
     <audio id="sound-move" src="https://assets.mixkit.co/sfx/preview/mixkit-game-ball-tap-2073.mp3" preload="auto"></audio>
     <audio id="sound-win" src="https://assets.mixkit.co/sfx/preview/mixkit-video-game-win-2016.mp3" preload="auto"></audio>
@@ -56,3 +52,7 @@
     <script src="script.js"></script>
 </body>
 </html>
+
+
+
+

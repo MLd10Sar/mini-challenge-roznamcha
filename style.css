@@ -1,9 +1,12 @@
 :root {
     --primary-color: #4A148C;
-    --path-color: #d1c4e9; /* Light Purple Path */
+    --secondary-color: #00BFA5;
+    --path-color: #ede7f6; /* A lighter, more subtle purple for the path background */
     --board-bg: #ffffff;
     --light-text: #ffffff;
+    --dark-text: #212529;
 }
+
 body {
     font-family: 'Vazirmatn', sans-serif;
     background-color: var(--primary-color);
@@ -15,17 +18,29 @@ body {
     padding: 20px;
     box-sizing: border-box;
 }
+
 .game-container {
     background: var(--board-bg);
     width: 95%;
-    max-width: 400px;
+    max-width: 450px;
     border-radius: 20px;
     padding: 25px;
     box-shadow: 0 15px 40px rgba(0,0,0,0.3);
     text-align: center;
 }
-.header h1 { color: var(--primary-color); font-size: 2.5rem; margin: 0; }
-.header p { color: #6c757d; font-size: 1.1rem; margin-top: 5px; }
+
+.header h1 {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    margin: 0;
+    font-weight: 800;
+}
+
+.header p {
+    color: #6c757d;
+    font-size: 1.1rem;
+    margin-top: 5px;
+}
 
 .board-wrapper {
     margin-top: 25px;
@@ -33,17 +48,40 @@ body {
     background-color: var(--path-color);
     border-radius: 12px;
 }
+
 .board {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 columns */
-    grid-template-rows: repeat(3, 1fr); /* 3 rows */
-    gap: 8px;
     position: relative;
-}
-.space {
     width: 100%;
-    height: 70px;
-    border-radius: 50%; /* Ludo-style circles */
+    height: 300px; /* Fixed height for the board */
+}
+
+.game-path-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.game-path-svg path {
+    stroke: #d1c4e9; /* Light purple path color */
+    stroke-width: 50;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.space-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+.space {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -52,42 +90,30 @@ body {
     color: #333;
     border: 4px solid #fff;
     box-shadow: 0 4px 5px rgba(0,0,0,0.1);
+    position: absolute;
+    transform: translate(-50%, -50%);
 }
-.space.path {
-    background-color: transparent;
-    border: none;
-    box-shadow: none;
-}
-.space.start { background-color: #28a745; color: white;}
-.space.end { background-color: #ffc107; }
+
+.space.start { background-color: #28a745; color: white; }
+.space.end { background-color: #ffc107; color: white; }
 .space.sale { background-color: #c8e6c9; }
 .space.expense { background-color: #ffcdd2; }
 .space.inventory { background-color: #bbdefb; }
 
-/* Grid placement for the snake path */
-.space[data-space="0"] { grid-column: 1; grid-row: 1; }
-.space[data-space="1"] { grid-column: 2; grid-row: 1; }
-.space[data-space="2"] { grid-column: 3; grid-row: 1; }
-.space[data-space="3"] { grid-column: 4; grid-row: 1; }
-.space[data-space="4"] { grid-column: 4; grid-row: 2; }
-.space[data-space="5"] { grid-column: 4; grid-row: 3; }
-.space[data-space="6"] { grid-column: 3; grid-row: 3; }
-.space[data-space="7"] { grid-column: 2; grid-row: 3; }
-.space[data-space="8"] { grid-column: 1; grid-row: 3; }
-.space[data-space="9"] { grid-column: 1; grid-row: 2; }
-/* ... you can add more spaces up to 12 */
-
 .player-piece {
-    width: 35px;
-    height: 35px;
+    width: 30px;
+    height: 30px;
     background-color: var(--primary-color);
-    border: 4px solid #fff;
+    border: 4px solid var(--light-text);
     border-radius: 50%;
     position: absolute;
     box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-    transition: all 0.4s cubic-bezier(0.65, 0, 0.35, 1); /* Smooth animation */
-    z-index: 10;
+    z-index: 3;
+    transform: translate(-50%, -50%);
+    /* Animation is handled by JavaScript */
 }
+
+/* --- COMPLETE STYLES FOR CONTROLS, DICE, INFOBOX, FINAL SCREEN --- */
 
 .controls {
     margin-top: 25px;
@@ -95,6 +121,11 @@ body {
     gap: 20px;
     align-items: center;
 }
+
+.dice-container {
+    perspective: 400px;
+}
+
 .dice {
     width: 70px;
     height: 70px;
@@ -103,16 +134,21 @@ body {
     border-radius: 12px;
     cursor: pointer;
     background-color: #fff;
-    color: #333;
+    color: var(--dark-text);
     box-shadow: 0 5px 15px rgba(0,0,0,0.15);
     transition: transform 0.5s;
     transform-style: preserve-3d;
 }
-.dice.rolling { animation: roll 0.5s; }
+
+.dice.rolling {
+    animation: roll 0.5s;
+}
+
 @keyframes roll {
     from { transform: rotateX(0deg) rotateY(0deg); }
     to { transform: rotateX(720deg) rotateY(720deg); }
 }
+
 .info-box {
     flex: 1;
     background-color: var(--path-color);
@@ -121,6 +157,66 @@ body {
     font-size: 1.1rem;
     font-weight: 700;
     text-align: right;
-    min-height: 40px;
+    min-height: 40px; /* Prevents layout shifts */
 }
-/* ... (Final Screen styles are the same as before) ... */
+
+.info-box strong {
+    color: var(--primary-color);
+}
+
+.final-screen {
+    position: fixed;
+    inset: 0; /* A modern shortcut for top:0, right:0, bottom:0, left:0 */
+    background: rgba(0,0,0,0.85);
+    color: var(--light-text);
+    display: none; /* Initially hidden */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.final-screen.show {
+    display: flex;
+    opacity: 1;
+}
+
+.final-content {
+    transform: scale(0.8);
+    opacity: 0;
+    animation: popIn 0.5s forwards;
+}
+
+@keyframes popIn {
+    to { transform: scale(1); opacity: 1; }
+}
+
+.final-screen h1 {
+    font-size: 3.5rem;
+    margin: 0;
+    font-weight: 800;
+    color: #ffc107; /* Gold color for winning */
+}
+
+.final-screen p {
+    font-size: 1.2rem;
+    max-width: 350px;
+    margin: 15px 20px 0 20px;
+}
+
+.download-button {
+    text-decoration: none;
+    background-color: var(--secondary-color);
+    color: var(--light-text);
+    padding: 15px 30px;
+    border-radius: 30px;
+    margin-top: 30px;
+    font-weight: 700;
+    transition: transform 0.2s;
+}
+.download-button:hover {
+    transform: scale(1.05);
+}
