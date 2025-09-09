@@ -1,58 +1,32 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="fa">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>بازی روزنامچه</title>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Roznamcha Game</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="game-container">
-        <div class="header">
-            <h1>بازی روزنامچه</h1>
-            <p>با هر معامله، کسب و کارتان را رشد دهید!</p>
-        </div>
-
-        <div class="board-wrapper">
-            <div class="board">
-                <!-- 1. The SVG Path - This is the track -->
-                <svg viewBox="0 0 400 300" class="game-path-svg">
-                    <path id="game-path" d="M 50 50 H 350 V 150 H 50 V 250 H 350" stroke="transparent" fill="none" />
-                </svg>
-
-                <!-- 2. The Spaces - Placed on top of the path -->
-                <div class="space-container">
-                    <!-- Spaces will be generated here by JavaScript -->
-                </div>
-                
-                <!-- 3. The Player Piece -->
-                <div class="player-piece" id="player-piece"></div>
-            </div>
-        </div>
-
-        <div class="controls">
-            <button class="dice" id="dice-roll-button">🎲</button>
-            <div class="info-box" id="info-box">برای شروع، زار را بیندازید!</div>
-        </div>
+  <!-- Game Board -->
+  <div class="game-container">
+    <h1>🎲 روزنامچه - بازی حسابداری</h1>
+    <svg id="board" width="400" height="400"></svg>
+    <div class="controls">
+      <button id="roll-btn">🎲 پرتاب تاس</button>
+      <p id="dice-result">نتیجه: -</p>
     </div>
-    
-    <!-- Final "Win" Screen -->
-    <div class="final-screen" id="final-screen">
-        <h1>تبریک!</h1>
-        <p>شما به مفاد رسیدید! روزنامچه به شما کمک میکند تا همیشه برنده باشید.</p>
-        <a href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" class="download-button">دانلود نسخه کامل</a>
-    </div>
-    
-    <!-- Audio files -->
-    <audio id="sound-roll" src="https://assets.mixkit.co/sfx/preview/mixkit-dice-roll-1721.mp3" preload="auto"></audio>
-    <audio id="sound-move" src="https://assets.mixkit.co/sfx/preview/mixkit-game-ball-tap-2073.mp3" preload="auto"></audio>
-    <audio id="sound-win" src="https://assets.mixkit.co/sfx/preview/mixkit-video-game-win-2016.mp3" preload="auto"></audio>
+  </div>
 
-    <script src="script.js"></script>
+  <!-- Final "Win" Screen -->
+  <div class="final-screen" id="final-screen">
+    <h1>تبریک!</h1>
+    <p>شما به مفاد رسیدید! روزنامچه به شما کمک میکند تا همیشه برنده باشید.</p>
+    <a href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk"
+       class="download-button"
+       download>
+       📥 دانلود نسخه کامل
+    </a>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
