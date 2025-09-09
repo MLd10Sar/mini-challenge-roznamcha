@@ -1,73 +1,113 @@
-<!doctype html>
-<html lang="fa" dir="rtl">
+<!DOCTYPE html>
+<html lang="fa">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>روزنامچه — بازی حسابداری</title>
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>بازی روزنامچه 🎲</title>
+<style>
+  body {
+    font-family: Tahoma, sans-serif;
+    text-align: center;
+    background: #fafafa;
+    margin: 0; padding: 0;
+  }
+  h1 { margin: 10px; }
+  #board { margin: 20px auto; display: grid; grid-template-columns: repeat(5, 60px); gap: 5px; }
+  .cell {
+    width: 60px; height: 60px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid #ccc; border-radius: 8px;
+    font-size: 14px;
+  }
+  .event { background: #ffeeba; }
+  .finish { background: #c3e6cb; font-weight: bold; }
+  .player {
+    width: 20px; height: 20px; border-radius: 50%;
+  }
+  .p1 { background: blue; }
+  .p2 { background: red; }
+  button {
+    padding: 12px 20px; font-size: 18px; margin-top: 20px; cursor: pointer;
+  }
+  #message { margin-top: 15px; font-size: 16px; }
+  .final-screen { display:none; margin-top:30px; }
+  .download-button {
+    display:inline-block; padding:12px 24px; background:#28a745; color:#fff;
+    text-decoration:none; border-radius:10px; font-weight:bold;
+  }
+</style>
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <h1>🎲 روزنامچه — بازی حسابداری</h1>
-      <p class="subtitle">با هر معامله یک قدم به مفاد نزدیک‌تر شوید!</p>
-      <div class="stats">
-        <div class="stat"><strong id="coins">0</strong><span>سکه</span></div>
-        <div class="stat"><strong id="level">1</strong><span>سطح</span></div>
-        <div class="stat"><strong id="streak">0</strong><span>استریک</span></div>
-      </div>
+  <h1>🎲 بازی روزنامچه - مدیریت دکان</h1>
+  <div id="board"></div>
+  <button id="roll-btn">🎲 پرتاب تاس</button>
+  <p id="message">نوبت بازیکن 1 است</p>
 
-      <div class="progress-wrap">
-        <div class="progress-label">پیشرفت به مفاد</div>
-        <div class="progress">
-          <div id="progress-bar" class="progress-bar" style="width:0%"></div>
-        </div>
-      </div>
-    </header>
-
-    <main class="board-area">
-      <div id="board" class="board"></div>
-
-      <!-- moving piece (absolute over board) -->
-      <div id="piece" class="piece" aria-hidden="true"></div>
-
-      <!-- confetti canvas -->
-      <canvas id="confetti-canvas" class="confetti"></canvas>
-    </main>
-
-    <footer class="controls">
-      <div class="dice-column">
-        <button id="roll-btn" class="roll-btn" aria-label="پر تاب تاس">🎲</button>
-        <div id="dice" class="dice-face">—</div>
-        <div class="hint">یک بار برای شروع — دوباره برای متوقف کردن</div>
-      </div>
-
-      <div class="info">
-        <div id="info-text">برای شروع، تاس را بزنید!</div>
-        <button id="reset-btn" class="small-link">ریست بازی</button>
-      </div>
-    </footer>
+  <!-- Win Screen -->
+  <div class="final-screen" id="final-screen">
+    <h2>تبریک 🎉</h2>
+    <p>شما دکان خود را مدیریت کردید!  
+    همین حالا <b>روزنامچه</b> را دانلود کنید و در زندگی واقعی هم برنده باشید.</p>
+    <a href="https://mld10sar.github.io/Esmat/app-release.apk" class="download-button" download>📥 دانلود نسخه کامل</a>
   </div>
 
-  <!-- final modal with the download link -->
-  <div id="win-modal" class="modal">
-    <div class="modal-card">
-      <h2>تبریک! 🎉</h2>
-      <p id="win-text">شما به مفاد رسیدید — نسخه کامل را دانلود کنید</p>
-      <a id="download-link" class="download-btn"
-         href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk"
-         download>📥 دانلود نسخه کامل</a>
-      <button id="close-win" class="secondary">بازگشت به بازی</button>
-    </div>
-  </div>
+<script>
+const board = document.getElementById("board");
+const rollBtn = document.getElementById("roll-btn");
+const msg = document.getElementById("message");
+const finalScreen = document.getElementById("final-screen");
 
-  <!-- audio (preload) -->
-  <audio id="sfx-roll" preload="auto" src="https://assets.mixkit.co/sfx/preview/mixkit-dice-roll-1721.mp3"></audio>
-  <audio id="sfx-move" preload="auto" src="https://assets.mixkit.co/sfx/preview/mixkit-game-ball-tap-2073.mp3"></audio>
-  <audio id="sfx-win" preload="auto" src="https://assets.mixkit.co/sfx/preview/mixkit-video-game-win-2016.mp3"></audio>
-  <audio id="sfx-bonus" preload="auto" src="https://assets.mixkit.co/sfx/preview/mixkit-cash-register-bling-2017.mp3"></audio>
+let size = 20; // 20 cells
+let cells = [];
+let playerPos = [0, 0]; // p1, p2
+let turn = 0; // 0 = p1, 1 = p2
 
-  <script src="script.js"></script>
+// Create board cells
+for (let i=0; i<size; i++) {
+  const cell = document.createElement("div");
+  cell.classList.add("cell");
+  if (i === size-1) cell.classList.add("finish");
+  if ([3,7,12,16].includes(i)) cell.classList.add("event");
+  board.appendChild(cell);
+  cells.push(cell);
+}
+
+function render() {
+  cells.forEach(c => c.innerHTML = "");
+  for (let p=0; p<2; p++) {
+    const piece = document.createElement("div");
+    piece.classList.add("player", p===0?"p1":"p2");
+    cells[playerPos[p]].appendChild(piece);
+  }
+}
+
+function handleEvent(pos) {
+  if (pos===3) { msg.innerHTML="🚫 جنس خلاص شد! بدون روزنامچه عقب بروید."; playerPos[turn]=Math.max(0,playerPos[turn]-2);}
+  if (pos===7) { msg.innerHTML="💸 دزدی شد! 2 خانه عقب."; playerPos[turn]=Math.max(0,playerPos[turn]-2);}
+  if (pos===12){ msg.innerHTML="📈 فروش عالی! 3 خانه جلو."; playerPos[turn]=Math.min(size-1,playerPos[turn]+3);}
+  if (pos===16){ msg.innerHTML="⚡ روزنامچه استفاده شد → جلو رفتید!"; playerPos[turn]=Math.min(size-1,playerPos[turn]+2);}
+}
+
+rollBtn.addEventListener("click", () => {
+  let dice = Math.floor(Math.random()*6)+1;
+  msg.innerHTML=`بازیکن ${turn+1} تاس انداخت: ${dice}`;
+  playerPos[turn] = Math.min(size-1, playerPos[turn]+dice);
+  
+  handleEvent(playerPos[turn]);
+  render();
+  
+  if (playerPos[turn]===size-1) {
+    document.getElementById("board").style.display="none";
+    rollBtn.style.display="none";
+    msg.style.display="none";
+    finalScreen.style.display="block";
+    return;
+  }
+  
+  turn = 1-turn; // switch turn
+  setTimeout(()=>{msg.innerHTML=`نوبت بازیکن ${turn+1} است`;},1000);
+});
+
+render();
+</script>
 </body>
 </html>
