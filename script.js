@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
             move: document.getElementById('sound-move'),
             win: document.getElementById('sound-win'),
         },
-        // Create an array from the spaces in the correct order
         spaces: Array.from(document.querySelectorAll('.space')).sort((a, b) => 
             parseInt(a.dataset.space, 10) - parseInt(b.dataset.space, 10)
         )
@@ -22,29 +21,29 @@ document.addEventListener('DOMContentLoaded', () => {
     let isMoving = false;
 
     // --- Game Logic ---
-    function movePlayerSmoothly(steps) {
-        let newPosition = playerPosition + steps;
-        
-        if (newPosition >= endPosition) {
-            newPosition = endPosition;
-            updatePiecePosition();
-            setTimeout(winGame, 600); // Win after the final move
+    function movePlayerOneStep() {
+        playerPosition++;
+        updatePiecePosition();
+        playSound(ui.sounds.move);
+    }
+    
+    function animateMove(steps) {
+        if (steps <= 0) {
+            // After movement is finished, apply the space effect
+            setTimeout(handleSpaceEffect, 300);
             return;
         }
 
-        const interval = setInterval(() => {
-            if (playerPosition === newPosition) {
-                clearInterval(interval);
-                handleSpaceEffect(); // Apply effect after landing
-                return;
-            }
-            playerPosition++;
-            updatePiecePosition();
-        }, 300); // 300ms per step
+        movePlayerOneStep();
+        
+        // Call the next step after a short delay
+        setTimeout(() => animateMove(steps - 1), 300); // 300ms delay per step
     }
-    
+
     function handleSpaceEffect() {
         const currentSpace = ui.spaces[playerPosition];
+        if (!currentSpace) return;
+        
         if (currentSpace.classList.contains('expense')) {
             ui.infoText.innerHTML = `وه! مصرف باعث شد <strong>۱ خانه</strong> به عقب بروید.`;
             playerPosition--;
@@ -61,8 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 isMoving = false;
                 ui.diceButton.disabled = false;
+                ui.infoText.innerHTML = 'دوباره زار بیندازید!';
             }
-        }, 500);
+        }, 800); // Wait a bit longer to show the effect message
     }
     
     function updatePiecePosition() {
@@ -72,12 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const boardRect = targetSpace.parentElement.getBoundingClientRect();
         const targetRect = targetSpace.getBoundingClientRect();
         
-        // Calculate position relative to the board
+        // Calculate position relative to the board's top-left corner
         const top = targetRect.top - boardRect.top + (targetRect.height / 2) - (ui.playerPiece.offsetHeight / 2);
         const left = targetRect.left - boardRect.left + (targetRect.width / 2) - (ui.playerPiece.offsetWidth / 2);
         
         ui.playerPiece.style.transform = `translate(${left}px, ${top}px)`;
-        playSound(ui.sounds.move);
     }
     
     function rollDice() {
@@ -91,9 +90,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const rollResult = Math.floor(Math.random() * 3) + 1; // Roll between 1 and 3
         
         setTimeout(() => {
-            ui.infoText.innerHTML = `شما <strong>${rollResult}</strong> انداختید!`;
+            ui.infoText.innerHTML = `شما <strong>${rollResult}</strong> انداختید! در حال حرکت...`;
             ui.diceButton.classList.remove('rolling');
-            movePlayerSmoothly(rollResult);
+            
+            // Start the step-by-step animation
+            animateMove(rollResult);
         }, 500);
     }
     
@@ -106,13 +107,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function playSound(sound) {
         if (sound) {
             sound.currentTime = 0;
-            sound.play();
+            sound.play().catch(e => console.log("Audio play failed:", e));
         }
     }
 
     // --- Event Listeners & Initialization ---
     ui.diceButton.addEventListener('click', rollDice);
     
-    // A small delay to ensure layout is fully calculated before placing the piece
-    setTimeout(updatePiecePosition, 100);
+    // Initial placement of the piece with a small delay
+    setTimeout(updatePiecePosition, 200);
 });
