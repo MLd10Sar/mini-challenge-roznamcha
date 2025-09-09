@@ -1,138 +1,98 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const gameContainer = document.getElementById('game-container');
-    const startScreen = document.getElementById('start-screen');
-    const endScreen = document.getElementById('end-screen');
-    const startButton = document.getElementById('start-button');
-    const timerEl = document.getElementById('timer');
-    
-    // Game state variables
-    let score = 0;
-    let timeLeft = 30;
-    let gameInterval;
-    let timerInterval;
-    let draggedItem = null;
-
-    const assets = {
-        purchase: { img: 'https://i.imgur.com/sC5bWdI.png', value: 150 },
-        sale: { img: 'https://i.imgur.com/83mJ5nO.png', value: 250 },
-        inventory: { img: 'https://i.imgur.com/wA2P8oV.png', value: 1 }
-    };
-
+    // --- UI Elements ---
     const ui = {
-        salesTotal: document.getElementById('sales-total'),
-        purchasesTotal: document.getElementById('purchases-total'),
-        inventoryTotal: document.getElementById('inventory-total'),
-        finalTitle: document.getElementById('end-title'),
-        finalScore: document.getElementById('final-score'),
-        finalMessage: document.getElementById('end-message') // Get the message element
-    };
-    
-    const targets = {
-        purchase: document.getElementById('target-purchase'),
-        sale: document.getElementById('target-sale'),
-        inventory: document.getElementById('target-inventory')
+        playerPiece: document.getElementById('player-piece'),
+        diceButton: document.getElementById('dice-roll-button'),
+        infoText: document.getElementById('info-text'),
+        finalScreen: document.getElementById('final-screen'),
+        sounds: {
+            roll: document.getElementById('sound-roll'),
+            move: document.getElementById('sound-move'),
+            win: document.getElementById('sound-win'),
+        },
+        spaces: document.querySelectorAll('.space'),
     };
 
-    // --- GAME LOGIC ---
-    function createItem() {
-        const itemTypes = Object.keys(assets);
-        const type = itemTypes[Math.floor(Math.random() * itemTypes.length)];
-        const item = document.createElement('div');
-        item.className = 'item';
-        item.style.backgroundImage = `url(${assets[type].img})`;
-        item.style.left = `${Math.random() * (window.innerWidth - 60)}px`;
-        item.style.top = `-100px`;
-        item.dataset.type = type;
-        item.dataset.value = assets[type].value;
-
-        const fallDuration = Math.random() * 4000 + 4000;
-        item.animate([ { top: '-100px' }, { top: `${window.innerHeight + 100}px` } ], { duration: fallDuration, easing: 'linear' });
+    // --- Game State ---
+    let playerPosition = 0;
+    const endPosition = ui.spaces.length - 1;
+    let isRolling = false;
+    
+    // --- Game Logic ---
+    function movePlayer(steps) {
+        let newPosition = playerPosition + steps;
         
-        gameContainer.appendChild(item);
-        setTimeout(() => { if (item) item.remove(); }, fallDuration);
+        // Handle board boundaries and special spaces
+        if (newPosition > endPosition) newPosition = endPosition;
         
-        item.addEventListener('mousedown', () => { draggedItem = item; item.classList.add('dragging'); });
-    }
-
-    // --- MOUSE/TOUCH EVENT LISTENERS ---
-    function onMouseMove(e) {
-        if (draggedItem) {
-            const touch = e.touches ? e.touches[0] : e;
-            draggedItem.style.left = `${touch.clientX - 30}px`;
-            draggedItem.style.top = `${touch.clientY - 30}px`;
+        const targetSpace = ui.spaces[newPosition];
+        if (targetSpace.classList.contains('expense')) {
+            ui.infoText.innerHTML = `وه! مصرف باعث شد <strong>۱ خانه</strong> به عقب بروید.`;
+            newPosition -= 1;
+        } else if (targetSpace.classList.contains('inventory')) {
+            ui.infoText.innerHTML = `عالی! گدام تان منظم است. <strong>۱ خانه</strong> جایزه پیش بروید.`;
+            newPosition += 1;
         }
-    }
 
-    function onMouseUp(e) {
-        if (!draggedItem) return;
+        // Final boundary check
+        if (newPosition < 0) newPosition = 0;
+        if (newPosition > endPosition) newPosition = endPosition;
 
-        const touch = e.changedTouches ? e.changedTouches[0] : e;
-        const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
-        const itemType = draggedItem.dataset.type;
-
-        if (dropTarget && dropTarget.id === `target-${itemType}`) {
-            score += parseInt(draggedItem.dataset.value, 10);
-            updateDashboard(itemType, parseInt(draggedItem.dataset.value, 10));
-            draggedItem.remove();
-        }
+        playerPosition = newPosition;
+        updatePiecePosition();
         
-        draggedItem.classList.remove('dragging');
-        draggedItem = null;
-        Object.values(targets).forEach(t => t.classList.remove('hover'));
-    }
-
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('touchmove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-    window.addEventListener('touchend', onMouseUp);
-
-    Object.values(targets).forEach(target => {
-        target.addEventListener('mouseenter', () => target.classList.add('hover'));
-        target.addEventListener('mouseleave', () => target.classList.remove('hover'));
-    });
-
-    function updateDashboard(type, value) {
-        let el;
-        switch (type) {
-            case 'sale': el = ui.salesTotal; break;
-            case 'purchase': el = ui.purchasesTotal; break;
-            case 'inventory': el = ui.inventoryTotal; break;
+        // Check for win condition
+        if (playerPosition === endPosition) {
+            setTimeout(winGame, 800);
         }
-        if (el) {
-            let current = parseFloat(el.textContent.replace(/,/g, '')) || 0;
-            el.textContent = (current + value).toLocaleString('en-US');
-            el.style.color = '#00BFA5';
-            setTimeout(() => { el.style.color = '#212529'; }, 300);
-        }
-    }
-
-    function startGame() {
-        score = 0; timeLeft = 30;
-        gameContainer.innerHTML = '';
-        ui.salesTotal.textContent = '0';
-        ui.purchasesTotal.textContent = '0';
-        ui.inventoryTotal.textContent = '0';
-
-        startScreen.classList.remove('show');
-        startScreen.classList.add('hidden'); // Force hide
-        
-        gameInterval = setInterval(createItem, 900);
-        
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            timerEl.textContent = timeLeft;
-            if (timeLeft <= 0) endGame();
-        }, 1000);
-    }
-
-    function endGame() {
-        clearInterval(gameInterval);
-        clearInterval(timerInterval);
-        ui.finalTitle.textContent = "وقت تمام شد!";
-        ui.finalScore.textContent = score.toLocaleString('en-US');
-        ui.finalMessage.textContent = "روزنامچه حسابات شما را همیشه منظم نگه میدارد.";
-        endScreen.classList.add('show');
     }
     
-    startButton.addEventListener('click', startGame);
+    function updatePiecePosition() {
+        const targetSpace = ui.spaces[playerPosition];
+        const targetRect = targetSpace.getBoundingClientRect();
+        const boardRect = ui.playerPiece.parentElement.getBoundingClientRect();
+        
+        const top = targetRect.top - boardRect.top + (targetRect.height / 2) - (ui.playerPiece.offsetHeight / 2);
+        const right = boardRect.right - targetRect.right + (targetRect.width / 2) - (ui.playerPiece.offsetWidth / 2);
+        
+        ui.playerPiece.style.transform = `translate(${-right}px, ${top}px)`;
+        playSound(ui.sounds.move);
+    }
+    
+    function rollDice() {
+        if (isRolling) return;
+        isRolling = true;
+        
+        playSound(ui.sounds.roll);
+        ui.diceButton.classList.add('rolling');
+        
+        const rollResult = Math.floor(Math.random() * 3) + 1; // Roll between 1 and 3
+        ui.infoText.innerHTML = `شما <strong>${rollResult}</strong> انداختید!`;
+        
+        setTimeout(() => {
+            ui.diceButton.classList.remove('rolling');
+            movePlayer(rollResult);
+            isRolling = false;
+        }, 500); // Wait for animation to finish
+    }
+    
+    function winGame() {
+        ui.infoText.textContent = "شما برنده شدید!";
+        ui.finalScreen.classList.add('show');
+        playSound(ui.sounds.win);
+    }
+
+    function playSound(sound) {
+        if (sound) {
+            sound.currentTime = 0;
+            sound.play();
+        }
+    }
+
+    // --- Event Listeners ---
+    ui.diceButton.addEventListener('click', rollDice);
+    
+    // --- Initialize Game ---
+    // A small delay to ensure layout is calculated
+    setTimeout(updatePiecePosition, 100);
 });

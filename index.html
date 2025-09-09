@@ -2,51 +2,57 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>چالش روزنامچه</title>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>بازی روزنامچه</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="game-board">
+        <div class="header">
+            <h1>بازی روزنامچه</h1>
+            <p>با هر معامله، کسب و کارتان را رشد دهید!</p>
+        </div>
 
-    <div id="game-container">
-        <!-- Items will be generated here by JavaScript -->
-    </div>
-
-    <div id="ui-container">
-        <div class="phone-frame">
-            <!-- App Screen -->
-            <div class="screen">
-                <div class="app-header">روزنامچه</div>
-                <div class="metric"><span>مجموع فروش</span><strong id="sales-total">۰</strong></div>
-                <div class="metric"><span>مجموع خرید</span><strong id="purchases-total">۰</strong></div>
-                <div class="metric"><span>موجودی گدام</span><strong id="inventory-total">۰</strong></div>
+        <div class="path-container">
+            <div class="path">
+                <div class="space start">شروع</div>
+                <div class="space sale">فروش</div>
+                <div class="space inventory">گدام</div>
+                <div class="space expense">مصرف</div>
+                <div class="space sale">فروش</div>
+                <div class="space sale">فروش</div>
+                <div class="space inventory">گدام</div>
+                <div class="space expense">کرایه</div>
+                <div class="space sale">فروش</div>
+                <div class="space end">مفاد!</div>
             </div>
+            <div class="player-piece" id="player-piece"></div>
         </div>
-        <div class="targets">
-            <div class="target" id="target-purchase">🛒 خرید</div>
-            <div class="target" id="target-sale">💸 فروش</div>
-            <div class="target" id="target-inventory">📦 گدام</div>
-        </div>
-        <div class="timer">وقت: <span id="timer">30</span></div>
-    </div>
 
-    <div id="start-screen" class="overlay show">
-        <div class="content">
-            <h1>چالش دکاندار</h1>
-            <p>قبل از تمام شدن وقت، حسابات پراکنده را جمع آوری کرده و در کتگوری درست آن قرار دهید!</p>
-            <button id="start-button">شروع بازی</button>
+        <div class="controls">
+            <div class="dice-container">
+                <button class="dice" id="dice-roll-button">🎲</button>
+            </div>
+            <div class="info-box">
+                <div id="info-text">برای شروع، زار را بیندازید!</div>
+            </div>
         </div>
     </div>
     
-    <div id="end-screen" class="overlay">
-        <div class="content">
-            <h1 id="end-title"></h1>
-            <p>امتیاز شما: <span id="final-score">0</span></p>
-            <p>روزنامچه حسابات شما را همیشه منظم نگه میدارد.</p>
+    <!-- Final "Win" Screen -->
+    <div class="final-screen" id="final-screen">
+        <div class="final-content">
+            <h1>تبریک!</h1>
+            <p>شما به مفاد رسیدید! روزنامچه به شما کمک میکند تا همیشه برنده باشید.</p>
             <a href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" class="download-button">دانلود نسخه کامل</a>
         </div>
     </div>
+    
+    <!-- Audio files -->
+    <audio id="sound-roll" src="https://assets.mixkit.co/sfx/preview/mixkit-dice-roll-1721.mp3" preload="auto"></audio>
+    <audio id="sound-move" src="https://assets.mixkit.co/sfx/preview/mixkit-game-ball-tap-2073.mp3" preload="auto"></audio>
+    <audio id="sound-win" src="https://assets.mixkit.co/sfx/preview/mixkit-video-game-win-2016.mp3" preload="auto"></audio>
 
     <script src="script.js"></script>
 </body>
