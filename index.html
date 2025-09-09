@@ -1,34 +1,72 @@
-<!DOCTYPE html>
-<html lang="fa">
+<!doctype html>
+<html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>Roznamcha Game</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>روزنامچه — بازی حسابداری</title>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Game Board -->
-  <div class="game-container">
-    <h1>🎲 روزنامچه - بازی حسابداری</h1>
-    <svg id="board" width="500" height="500"></svg>
-    <div class="controls">
-      <button id="roll-btn">🎲 پرتاب تاس</button>
-      <div class="dice-box">
-        <div id="dice" class="dice">⚀</div>
+  <div class="app">
+    <header class="topbar">
+      <h1>🎲 روزنامچه — بازی حسابداری</h1>
+      <p class="subtitle">با هر معامله یک قدم به مفاد نزدیک‌تر شوید!</p>
+      <div class="stats">
+        <div class="stat"><strong id="coins">0</strong><span>سکه</span></div>
+        <div class="stat"><strong id="level">1</strong><span>سطح</span></div>
+        <div class="stat"><strong id="streak">0</strong><span>استریک</span></div>
       </div>
-      <p id="dice-result">نتیجه: -</p>
+
+      <div class="progress-wrap">
+        <div class="progress-label">پیشرفت به مفاد</div>
+        <div class="progress">
+          <div id="progress-bar" class="progress-bar" style="width:0%"></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="board-area">
+      <div id="board" class="board"></div>
+
+      <!-- moving piece (absolute over board) -->
+      <div id="piece" class="piece" aria-hidden="true"></div>
+
+      <!-- confetti canvas -->
+      <canvas id="confetti-canvas" class="confetti"></canvas>
+    </main>
+
+    <footer class="controls">
+      <div class="dice-column">
+        <button id="roll-btn" class="roll-btn" aria-label="پر تاب تاس">🎲</button>
+        <div id="dice" class="dice-face">—</div>
+        <div class="hint">یک بار برای شروع — دوباره برای متوقف کردن</div>
+      </div>
+
+      <div class="info">
+        <div id="info-text">برای شروع، تاس را بزنید!</div>
+        <button id="reset-btn" class="small-link">ریست بازی</button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- final modal with the download link -->
+  <div id="win-modal" class="modal">
+    <div class="modal-card">
+      <h2>تبریک! 🎉</h2>
+      <p id="win-text">شما به مفاد رسیدید — نسخه کامل را دانلود کنید</p>
+      <a id="download-link" class="download-btn"
+         href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk"
+         download>📥 دانلود نسخه کامل</a>
+      <button id="close-win" class="secondary">بازگشت به بازی</button>
     </div>
   </div>
 
-  <!-- Final "Win" Screen -->
-  <div class="final-screen" id="final-screen">
-    <h1>تبریک!</h1>
-    <p>شما به مفاد رسیدید! روزنامچه به شما کمک میکند تا همیشه برنده باشید.</p>
-    <a href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk"
-       class="download-button"
-       download>
-       📥 دانلود نسخه کامل
-    </a>
-  </div>
+  <!-- audio (preload) -->
+  <audio id="sfx-roll" preload="auto" src="https://assets.mixkit.co/sfx/preview/mixkit-dice-roll-1721.mp3"></audio>
+  <audio id="sfx-move" preload="auto" src="https://assets.mixkit.co/sfx/preview/mixkit-game-ball-tap-2073.mp3"></audio>
+  <audio id="sfx-win" preload="auto" src="https://assets.mixkit.co/sfx/preview/mixkit-video-game-win-2016.mp3"></audio>
+  <audio id="sfx-bonus" preload="auto" src="https://assets.mixkit.co/sfx/preview/mixkit-cash-register-bling-2017.mp3"></audio>
 
   <script src="script.js"></script>
 </body>
