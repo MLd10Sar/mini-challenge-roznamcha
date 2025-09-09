@@ -1,13 +1,22 @@
 body {
   font-family: Tahoma, sans-serif;
   text-align: center;
-  background: #f4f4f4;
+  background: linear-gradient(135deg, #f0f0f0, #dcdcdc);
   margin: 0;
   padding: 0;
 }
 
-.game-container {
+h1 {
   margin-top: 20px;
+  color: #222;
+}
+
+#board {
+  margin-top: 20px;
+  border: 3px solid #333;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 .controls {
@@ -15,9 +24,42 @@ body {
 }
 
 button {
-  padding: 10px 20px;
+  padding: 12px 20px;
   font-size: 18px;
   cursor: pointer;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+/* Dice box */
+.dice-box {
+  margin-top: 15px;
+}
+
+.dice {
+  font-size: 48px;
+  display: inline-block;
+  margin: 10px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.dice.roll {
+  animation: rollDice 0.6s infinite;
+}
+
+@keyframes rollDice {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(90deg); }
+  50% { transform: rotate(180deg); }
+  75% { transform: rotate(270deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .final-screen {
