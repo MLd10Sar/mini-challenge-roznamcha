@@ -808,7 +808,7 @@
             // Move to next player
             function nextPlayer() {
                 currentPlayer = (currentPlayer + 1) % totalPlayers;
-                gameInfoElement.textContent = `${texts[currentLanguage].turn} ${playerNames[currentPlayer]} ${currentLanguage === 'dari' ? 'است' : 'دری'}`;
+                gameInfoElement.textContent = `${texts[currentLanguage].turn} ${playerNames[currentPlayer]} ${currentLanguage === 'dari' ? 'است' : 'دی'}`;
                 
                 // If it's a computer player, automatically roll after a delay
                 if (currentPlayer !== 0) {
