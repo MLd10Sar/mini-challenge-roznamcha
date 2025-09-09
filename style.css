@@ -3,87 +3,79 @@
     --sale-color: #28a745; --purchase-color: #dc3545; --inventory-color: #ffc107;
 }
 body {
-    font-family: 'Vazirmatn', sans-serif;
-    margin: 0;
-    overflow: hidden;
-    background: #e9ecef;
+    font-family: 'Vazirmatn', sans-serif; margin: 0; overflow: hidden;
+    background: #1a1a1a; /* Darker background for game feel */
     user-select: none;
 }
-#game-container {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 1;
-}
+#game-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 .item {
-    position: absolute;
-    width: 60px;
-    height: 60px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    cursor: grab;
-    transition: transform 0.1s ease-out;
+    position: absolute; width: 60px; height: 60px;
+    background-size: contain; background-repeat: no-repeat;
+    cursor: grab; transition: transform 0.1s ease-out;
 }
-.item.dragging {
-    transform: scale(1.2);
-    cursor: grabbing;
-}
+.item.dragging { transform: scale(1.2); cursor: grabbing; z-index: 100; }
+
 #ui-container {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    pointer-events: none; /* Allows clicks to pass through to game items */
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 2; display: flex; flex-direction: column;
+    align-items: center; pointer-events: none;
 }
 .phone-frame {
-    width: 280px;
-    height: 160px;
-    border: 8px solid #111;
-    border-radius: 20px;
-    background: #f8f9fa;
-    margin-top: 20px;
-    padding: 4px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    width: 280px; height: 160px; border: 8px solid #333;
+    border-radius: 20px; background: #f8f9fa; margin-top: 20px;
+    padding: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 .screen { width: 100%; height: 100%; background: #fff; border-radius: 12px; }
 .app-header { background-color: var(--primary-color); color: #fff; padding: 5px; text-align: center; font-weight: 700; }
 .metric { display: flex; justify-content: space-between; padding: 4px 10px; font-size: 0.9rem; }
-.metric strong { font-weight: 700; transition: color 0.3s; }
+.metric strong { font-weight: 700; }
+
 .targets {
-    display: flex;
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    pointer-events: auto; /* Make targets clickable */
+    display: flex; position: absolute; bottom: 0;
+    width: 100%; pointer-events: auto;
 }
 .target {
-    flex: 1;
-    text-align: center;
-    padding: 30px 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #fff;
-    transition: transform 0.2s, background-color 0.2s;
+    flex: 1; text-align: center; padding: 30px 0;
+    font-size: 1.5rem; font-weight: 700; color: #fff;
+    transition: transform 0.2s, filter 0.2s;
 }
-.target.hover { transform: scale(1.1); }
+.target.hover { transform: scale(1.1); filter: brightness(1.2); }
 #target-purchase { background-color: var(--purchase-color); }
-#target-sale { background-color: var(--success-color); }
+#target-sale { background-color: var(--sale-color); }
 #target-inventory { background-color: var(--inventory-color); }
-.timer { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: #fff; padding: 5px 10px; border-radius: 8px; font-weight: 700; }
+
+.timer {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(0,0,0,0.7); color: #fff;
+    padding: 5px 15px; border-radius: 8px; font-weight: 700; font-size: 1.2rem;
+}
+
+/* --- THE MAIN FIX FOR THE OVERLAY --- */
 .overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85); color: #fff; display: flex;
+    background: rgba(0,0,0,0.9); color: #fff;
+    display: flex; /* Use flex to center content */
     flex-direction: column; justify-content: center; align-items: center;
-    text-align: center; z-index: 100; transition: opacity 0.5s;
+    text-align: center; z-index: 100;
+    opacity: 0; /* Hidden by default */
+    visibility: hidden; /* Hidden by default */
+    transition: opacity 0.5s, visibility 0s 0.5s; /* Delay hiding visibility */
 }
-.overlay.hidden { visibility: hidden; opacity: 0; }
-.content { animation: popIn 0.5s forwards; }
-@keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.overlay.show {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.5s;
+}
+/* --- END OF MAIN FIX --- */
+
+.content { animation: popIn 0.5s 0.3s forwards; opacity: 0; transform: scale(0.9); }
+@keyframes popIn { 100% { opacity: 1; transform: scale(1); } }
+
 .overlay h1 { font-size: 3rem; }
 .overlay p { font-size: 1.2rem; }
+.overlay .score { font-size: 1.5rem; color: var(--secondary-color); font-weight: 700; margin-top: 15px;}
 .overlay button, .overlay a {
     background-color: var(--secondary-color); color: #fff; border: none; padding: 15px 30px;
     border-radius: 30px; font-size: 1.2rem; font-weight: 700; cursor: pointer;
-    margin-top: 20px; text-decoration: none; display: inline-block;
+    margin-top: 25px; text-decoration: none; display: inline-block;
 }
