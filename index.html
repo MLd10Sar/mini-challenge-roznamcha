@@ -2,61 +2,782 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>بازی روزنامچه - چالش کسب و کار</title>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بازی روزنامچه - نسخه لودو</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: linear-gradient(135deg, #4A148C 0%, #311B92 100%);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .game-container {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            background: #4A148C;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            font-weight: 800;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .board-container {
+            position: relative;
+            padding: 15px;
+            background: #f5f5f5;
+        }
+
+        .board {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect x="0" y="0" width="100" height="100" fill="%23f5f5f5" /></svg>');
+            background-size: 50px 50px;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .center-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 1;
+        }
+
+        .center-logo span {
+            font-weight: 800;
+            color: #4A148C;
+            font-size: 1.2rem;
+        }
+
+        .path {
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
+            border: 3px dashed #BDBDBD;
+            border-radius: 15px;
+        }
+
+        .spaces {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .space {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .space.active {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+
+        .space.start { background: #E8F5E9; }
+        .space.sale { background: #C8E6C9; }
+        .space.expense { background: #FFCDD2; }
+        .space.inventory { background: #BBDEFB; }
+        .space.end { background: #FFF8E1; }
+
+        .player {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            transition: all 0.5s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .player-1 { background: #FF5252; }
+        .player-2 { background: #448AFF; }
+        .player-3 { background: #FFC107; }
+        .player-4 { background: #4CAF50; }
+
+        .player.home {
+            width: 25px;
+            height: 25px;
+        }
+
+        .home-base {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            transform: translate(-50%, -50%);
+        }
+
+        .home-1 { background: rgba(255, 82, 82, 0.2); top: 20%; left: 20%; }
+        .home-2 { background: rgba(68, 138, 255, 0.2); top: 20%; left: 80%; }
+        .home-3 { background: rgba(255, 193, 7, 0.2); top: 80%; left: 80%; }
+        .home-4 { background: rgba(76, 175, 80, 0.2); top: 80%; left: 20%; }
+
+        .controls {
+            padding: 20px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .dice {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            background: #4A148C;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+            user-select: none;
+        }
+
+        .dice.rolling {
+            animation: roll 0.5s infinite;
+        }
+
+        @keyframes roll {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .game-info {
+            background: #F5F5F5;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .players-info {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .player-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+
+        .final-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .final-screen.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .final-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .final-content h2 {
+            color: #4A148C;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+
+        .final-content p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .download-button {
+            display: inline-block;
+            background: #00BFA5;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        .download-button:hover {
+            transform: scale(1.05);
+        }
+
+        .event-popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 20;
+            text-align: center;
+            display: none;
+            max-width: 80%;
+        }
+
+        .event-popup.active {
+            display: block;
+            animation: popIn 0.5s forwards;
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 500px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .board {
+                height: 350px;
+            }
+            
+            .space {
+                width: 32px;
+                height: 32px;
+                font-size: 0.6rem;
+            }
+            
+            .player {
+                width: 24px;
+                height: 24px;
+                font-size: 0.7rem;
+            }
+            
+            .dice {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="game-container">
         <div class="header">
-            <h1>بازی روزنامچه</h1>
-            <p>آیا میتوانی کسب و کارت را به مفاد برسانی؟</p>
+            <h1>بازی روزنامچه - نسخه لودو</h1>
+            <p>با هر حرکت، کسب و کارتان را رشد دهید!</p>
         </div>
 
-        <div class="board-wrapper">
+        <div class="board-container">
             <div class="board">
-                <div class="space start" data-space="0">شروع</div>
-                <div class="space sale" data-space="1">فروش</div>
-                <div class="space expense" data-space="2">مصرف</div>
-                <div class="space inventory" data-space="3">گدام</div>
-                <div class="space sale" data-space="4">فروش</div>
-                <div class="space sale" data-space="5">فروش</div>
-                <div class="space expense" data-space="6">کرایه</div>
-                <div class="space inventory" data-space="7">گدام</div>
-                <div class="space sale" data-space="8">فروش</div>
-                <div class="space profit" data-space="9">مفاد!</div>
-                
-                <div class="player-piece" id="player-piece-user">
-                    <div class="piece-icon">👤</div>
+                <div class="center-logo">
+                    <span>روزنامچه</span>
                 </div>
-                <div class="player-piece computer" id="player-piece-computer">
-                    <div class="piece-icon">🤖</div>
+                <div class="path"></div>
+                
+                <div class="home-base home-1"></div>
+                <div class="home-base home-2"></div>
+                <div class="home-base home-3"></div>
+                <div class="home-base home-4"></div>
+                
+                <div class="spaces" id="spaces">
+                    <!-- Spaces will be generated by JavaScript -->
+                </div>
+                
+                <div class="players" id="players">
+                    <!-- Player pieces will be generated by JavaScript -->
                 </div>
             </div>
         </div>
 
         <div class="controls">
             <div class="dice-container">
-                <button class="dice" id="dice-roll-button">🎲</button>
+                <div class="dice" id="dice">🎲</div>
             </div>
-            <div class="info-box" id="info-box">برای شروع، زار را بیندازید!</div>
+            
+            <div class="game-info" id="game-info">
+                برای شروع، تاس را بزنید!
+            </div>
+            
+            <div class="players-info">
+                <div class="player-info">
+                    <div class="player-color" style="background: #FF5252"></div>
+                    <span>شما</span>
+                </div>
+                <div class="player-info">
+                    <div class="player-color" style="background: #448AFF"></div>
+                    <span>حسین</span>
+                </div>
+                <div class="player-info">
+                    <div class="player-color" style="background: #FFC107"></div>
+                    <span>علی</span>
+                </div>
+                <div class="player-info">
+                    <div class="player-color" style="background: #4CAF50"></div>
+                    <span>محمد</span>
+                </div>
+            </div>
         </div>
     </div>
     
     <div class="final-screen" id="final-screen">
-        <h1 id="final-title"></h1>
-        <p id="final-message"></p>
-        <a href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" class="download-button">دانلود نسخه کامل روزنامچه</a>
+        <div class="final-content">
+            <h2>تبریک میگم! شما برنده شدید 🎉</h2>
+            <p>شما مهارت های مدیریتی عالی دارید! برای مدیریت واقعی کسب و کارتان، نسخه کامل روزنامچه را دانلود کنید.</p>
+            <a href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" class="download-button" download>
+                📥 دانلود نسخه کامل
+            </a>
+        </div>
     </div>
     
-    <audio id="sound-roll" src="https://assets.mixkit.co/sfx/preview/mixkit-dice-roll-1721.mp3" preload="auto"></audio>
-    <audio id="sound-move" src="https://assets.mixkit.co/sfx/preview/mixkit-game-ball-tap-2073.mp3" preload="auto"></audio>
-    <audio id="sound-win" src="https://assets.mixkit.co/sfx/preview/mixkit-video-game-win-2016.mp3" preload="auto"></audio>
-    <audio id="sound-lose" src="https://assets.mixkit.co/sfx/preview/mixkit-player-losing-or-failing-2042.mp3" preload="auto"></audio>
-    <audio id="sound-bonus" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-bonus-alert-767.mp3" preload="auto"></audio>
-    <audio id="sound-penalty" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-retro-game-over-213.mp3" preload="auto"></audio>
+    <div class="event-popup" id="event-popup">
+        <h3 id="event-title">رویداد ویژه</h3>
+        <p id="event-description">توضیحات رویداد اینجا نمایش داده می شود</p>
+        <button id="event-close" style="margin-top: 15px; padding: 8px 15px; background: #4A148C; color: white; border: none; border-radius: 5px; cursor: pointer;">متوجه شدم</button>
+    </div>
 
-    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Game elements
+            const spacesContainer = document.getElementById('spaces');
+            const playersContainer = document.getElementById('players');
+            const diceElement = document.getElementById('dice');
+            const gameInfoElement = document.getElementById('game-info');
+            const finalScreen = document.getElementById('final-screen');
+            const eventPopup = document.getElementById('event-popup');
+            const eventTitle = document.getElementById('event-title');
+            const eventDescription = document.getElementById('event-description');
+            const eventClose = document.getElementById('event-close');
+            
+            // Game configuration
+            const playerColors = ['player-1', 'player-2', 'player-3', 'player-4'];
+            const playerNames = ['شما', 'حسین', 'علی', 'محمد'];
+            const totalPlayers = 4;
+            const totalSpaces = 40;
+            
+            // Game state
+            let currentPlayer = 0;
+            let playersPosition = Array(totalPlayers).fill(-1);
+            let playersHomePosition = Array(totalPlayers).fill(0);
+            let gameActive = true;
+            let diceValue = 0;
+            let isRolling = false;
+            
+            // Space types and events
+            const spaceTypes = [
+                { type: 'start', label: 'شروع' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'inventory', label: 'گدام' },
+                { type: 'expense', label: 'مصرف' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'expense', label: 'کرایه' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'inventory', label: 'گدام' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'expense', label: 'اجاره' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'inventory', label: 'گدام' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'expense', label: 'حقوق' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'inventory', label: 'گدام' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'expense', label: 'قبوض' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'inventory', label: 'گدام' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'expense', label: 'خرید' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'inventory', label: 'گدام' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'expense', label: 'مالیات' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'inventory', label: 'گدام' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'expense', label: 'تعمیرات' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'inventory', label: 'گدام' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'expense', label: 'حمل و نقل' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'inventory', label: 'گدام' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'expense', label: 'بسته بندی' },
+                { type: 'sale', label: 'فروش' },
+                { type: 'end', label: 'مفاد!' }
+            ];
+            
+            // Space events and effects
+            const spaceEvents = {
+                sale: {
+                    title: 'فروش موفق!',
+                    description: 'شما محصولات را با سود فروختید. 2 خانه جلو بروید.',
+                    move: 2
+                },
+                expense: {
+                    title: 'هزینه غیرمنتظره',
+                    description: 'یک هزینه پیش بینی نشده داشتید. 2 خانه عقب بروید.',
+                    move: -2
+                },
+                inventory: {
+                    title: 'مدیریت موجودی',
+                    description: 'موجودی خود را به خوبی مدیریت کردید. یک نوبت دیگر تاس بیندازید.',
+                    extraTurn: true
+                }
+            };
+            
+            // Create spaces in a circular path
+            function createSpaces() {
+                const centerX = 50;
+                const centerY = 50;
+                const radius = 40;
+                
+                for (let i = 0; i < totalSpaces; i++) {
+                    const angle = (i / totalSpaces) * 2 * Math.PI - Math.PI/2;
+                    const x = centerX + radius * Math.cos(angle);
+                    const y = centerY + radius * Math.sin(angle);
+                    
+                    const space = document.createElement('div');
+                    space.className = `space ${spaceTypes[i].type}`;
+                    space.textContent = spaceTypes[i].label;
+                    space.style.left = `${x}%`;
+                    space.style.top = `${y}%`;
+                    space.dataset.index = i;
+                    
+                    spacesContainer.appendChild(space);
+                }
+            }
+            
+            // Create player pieces
+            function createPlayers() {
+                // Home positions for each player
+                const homePositions = [
+                    { x: 30, y: 30 }, // Top-left
+                    { x: 70, y: 30 }, // Top-right
+                    { x: 70, y: 70 }, // Bottom-right
+                    { x: 30, y: 70 }  // Bottom-left
+                ];
+                
+                for (let i = 0; i < totalPlayers; i++) {
+                    // Home piece
+                    const homePiece = document.createElement('div');
+                    homePiece.className = `player home ${playerColors[i]}`;
+                    homePiece.style.left = `${homePositions[i].x}%`;
+                    homePiece.style.top = `${homePositions[i].y}%`;
+                    homePiece.textContent = i+1;
+                    homePiece.dataset.player = i;
+                    playersContainer.appendChild(homePiece);
+                    
+                    // Game piece
+                    const gamePiece = document.createElement('div');
+                    gamePiece.className = `player ${playerColors[i]}`;
+                    gamePiece.style.left = `${homePositions[i].x}%`;
+                    gamePiece.style.top = `${homePositions[i].y}%`;
+                    gamePiece.textContent = i+1;
+                    gamePiece.dataset.player = i;
+                    gamePiece.id = `player-${i}`;
+                    playersContainer.appendChild(gamePiece);
+                }
+            }
+            
+            // Roll the dice
+            function rollDice() {
+                if (!gameActive || isRolling) return;
+                
+                isRolling = true;
+                diceElement.classList.add('rolling');
+                gameInfoElement.textContent = 'در حال انداختن تاس...';
+                
+                // Simulate dice roll
+                const rolls = 10;
+                let rollCount = 0;
+                
+                const rollInterval = setInterval(() => {
+                    diceValue = Math.floor(Math.random() * 6) + 1;
+                    diceElement.textContent = getDiceFace(diceValue);
+                    
+                    rollCount++;
+                    if (rollCount >= rolls) {
+                        clearInterval(rollInterval);
+                        diceElement.classList.remove('rolling');
+                        
+                        gameInfoElement.textContent = `${playerNames[currentPlayer]} ${diceValue} انداخت`;
+                        
+                        // Move player after a short delay
+                        setTimeout(() => {
+                            movePlayer(currentPlayer, diceValue);
+                        }, 1000);
+                    }
+                }, 100);
+            }
+            
+            // Get dice face emoji
+            function getDiceFace(value) {
+                const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+                return diceFaces[value - 1];
+            }
+            
+            // Move player step by step
+            function movePlayer(playerId, steps) {
+                if (playersPosition[playerId] === -1 && steps !== 6) {
+                    // Player needs a 6 to start
+                    gameInfoElement.textContent = `${playerNames[playerId]} نیاز به ۶ دارد تا شروع کند!`;
+                    setTimeout(nextPlayer, 1500);
+                    isRolling = false;
+                    return;
+                }
+                
+                if (playersPosition[playerId] === -1 && steps === 6) {
+                    // Player can start
+                    playersPosition[playerId] = 0;
+                    updatePlayerPosition(playerId);
+                    gameInfoElement.textContent = `${playerNames[playerId]} بازی را شروع کرد!`;
+                    setTimeout(nextPlayer, 1500);
+                    isRolling = false;
+                    return;
+                }
+                
+                let stepsRemaining = steps;
+                const moveInterval = setInterval(() => {
+                    if (stepsRemaining > 0) {
+                        playersPosition[playerId] = (playersPosition[playerId] + 1) % totalSpaces;
+                        updatePlayerPosition(playerId);
+                        stepsRemaining--;
+                    } else {
+                        clearInterval(moveInterval);
+                        
+                        // Check for space event
+                        const spaceType = spaceTypes[playersPosition[playerId]].type;
+                        
+                        if (spaceType !== 'start' && spaceType !== 'end') {
+                            // Show event popup after a short delay
+                            setTimeout(() => {
+                                showEvent(spaceEvents[spaceType], playerId);
+                            }, 500);
+                        } else if (spaceType === 'end') {
+                            // Player wins!
+                            setTimeout(() => {
+                                showWinScreen(playerId);
+                            }, 500);
+                        } else {
+                            // Move to next player after a short delay
+                            setTimeout(() => {
+                                isRolling = false;
+                                nextPlayer();
+                            }, 1000);
+                        }
+                    }
+                }, 400);
+            }
+            
+            // Update player position on board
+            function updatePlayerPosition(playerId) {
+                const position = playersPosition[playerId];
+                if (position === -1) return;
+                
+                const angle = (position / totalSpaces) * 2 * Math.PI - Math.PI/2;
+                const centerX = 50;
+                const centerY = 50;
+                const radius = 40;
+                
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                
+                // Move player piece
+                const playerPiece = document.getElementById(`player-${playerId}`);
+                playerPiece.style.left = `${x}%`;
+                playerPiece.style.top = `${y}%`;
+            }
+            
+            // Show event popup
+            function showEvent(event, playerId) {
+                eventTitle.textContent = event.title;
+                eventDescription.textContent = event.description;
+                eventPopup.classList.add('active');
+                
+                eventClose.onclick = () => {
+                    eventPopup.classList.remove('active');
+                    
+                    // Apply event effect
+                    if (event.move) {
+                        setTimeout(() => {
+                            movePlayer(playerId, event.move);
+                        }, 500);
+                    } else if (event.extraTurn) {
+                        gameInfoElement.textContent = `${playerNames[playerId]} یک نوبت اضافه گرفت!`;
+                        isRolling = false;
+                        // Don't call nextPlayer, current player goes again
+                    } else {
+                        setTimeout(() => {
+                            isRolling = false;
+                            nextPlayer();
+                        }, 1000);
+                    }
+                };
+            }
+            
+            // Move to next player
+            function nextPlayer() {
+                currentPlayer = (currentPlayer + 1) % totalPlayers;
+                gameInfoElement.textContent = `نوبت ${playerNames[currentPlayer]} است`;
+                
+                // If it's a computer player, automatically roll after a delay
+                if (currentPlayer !== 0) {
+                    setTimeout(() => {
+                        rollDice();
+                    }, 1500);
+                } else {
+                    isRolling = false;
+                }
+            }
+            
+            // Show win screen
+            function showWinScreen(playerId) {
+                gameActive = false;
+                
+                if (playerId === 0) {
+                    // Human player won
+                    finalScreen.classList.add('active');
+                } else {
+                    // Computer player won
+                    gameInfoElement.textContent = `${playerNames[playerId]} برنده شد! بازی جدیدی شروع می شود.`;
+                    
+                    // Restart game after a delay
+                    setTimeout(() => {
+                        resetGame();
+                    }, 3000);
+                }
+            }
+            
+            // Reset game
+            function resetGame() {
+                playersPosition = Array(totalPlayers).fill(-1);
+                playersHomePosition = Array(totalPlayers).fill(0);
+                currentPlayer = 0;
+                gameActive = true;
+                isRolling = false;
+                
+                // Reset player positions
+                for (let i = 0; i < totalPlayers; i++) {
+                    const homePositions = [
+                        { x: 30, y: 30 },
+                        { x: 70, y: 30 },
+                        { x: 70, y: 70 },
+                        { x: 30, y: 70 }
+                    ];
+                    
+                    const playerPiece = document.getElementById(`player-${i}`);
+                    playerPiece.style.left = `${homePositions[i].x}%`;
+                    playerPiece.style.top = `${homePositions[i].y}%`;
+                }
+                
+                gameInfoElement.textContent = 'بازی جدید شروع شد! نوبت شماست.';
+            }
+            
+            // Initialize game
+            function initGame() {
+                createSpaces();
+                createPlayers();
+                
+                // Add event listener to dice
+                diceElement.addEventListener('click', rollDice);
+                
+                // Start with human player
+                gameInfoElement.textContent = 'نوبت شماست. تاس را بزنید!';
+            }
+            
+            // Start the game
+            initGame();
+        });
+    </script>
 </body>
 </html>
