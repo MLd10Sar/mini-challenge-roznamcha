@@ -475,7 +475,8 @@
                     inventoryEvent: "مدیریت موجودی",
                     inventoryDesc: "موجودی خود را به خوبی مدیریت کردید. یک نوبت دیگر تاس بیندازید.",
                     understood: "متوجه شدم",
-                    turn: "نوبت"
+                    turn: "نوبت",
+                    is: "است"
                 },
                 pashto: {
                     gameTitle: "د روزنامچه لوبه - لودو نسخه",
@@ -496,7 +497,8 @@
                     inventoryEvent: "د توکو مدیریت",
                     inventoryDesc: "تاسې خپل توکي ښه مدیریت کړل. یو ځل بیا ډیس وغورځوۍ.",
                     understood: "پوه شم",
-                    turn: "نوبت"
+                    turn: "نوبت",
+                    is: "دی"
                 }
             };
             
@@ -531,7 +533,7 @@
                     if (currentPlayer === 0) {
                         gameInfoElement.textContent = t.startMessage;
                     } else {
-                        gameInfoElement.textContent = t.turn + " " + playerNames[currentPlayer] + " " + t.is;
+                        gameInfoElement.textContent = t.turn + " " + getPlayerName(currentPlayer) + " " + t.is;
                     }
                 }
             }
@@ -541,18 +543,20 @@
             pashtoBtn.addEventListener('click', () => setLanguage('pashto'));
             
             // Game configuration
-            const playerColors = ['player-1', 'player-2'];
-            const playerNames = [texts.dari.you, texts.dari.computer];
             const totalPlayers = 2;
             const totalSpaces = 40;
             
             // Game state
             let currentPlayer = 0;
             let playersPosition = Array(totalPlayers).fill(-1);
-            let playersHomePosition = Array(totalPlayers).fill(0);
             let gameActive = true;
             let diceValue = 0;
             let isRolling = false;
+            
+            // Get player name based on current language
+            function getPlayerName(playerId) {
+                return playerId === 0 ? texts[currentLanguage].you : texts[currentLanguage].computer;
+            }
             
             // Space types and events
             const spaceTypes = [
@@ -650,7 +654,7 @@
                 for (let i = 0; i < totalPlayers; i++) {
                     // Home piece
                     const homePiece = document.createElement('div');
-                    homePiece.className = `player home ${playerColors[i]}`;
+                    homePiece.className = `player home player-${i+1}`;
                     homePiece.style.left = `${homePositions[i].x}%`;
                     homePiece.style.top = `${homePositions[i].y}%`;
                     homePiece.textContent = i+1;
@@ -659,7 +663,7 @@
                     
                     // Game piece
                     const gamePiece = document.createElement('div');
-                    gamePiece.className = `player ${playerColors[i]}`;
+                    gamePiece.className = `player player-${i+1}`;
                     gamePiece.style.left = `${homePositions[i].x}%`;
                     gamePiece.style.top = `${homePositions[i].y}%`;
                     gamePiece.textContent = i+1;
@@ -690,7 +694,7 @@
                         clearInterval(rollInterval);
                         diceElement.classList.remove('rolling');
                         
-                        gameInfoElement.textContent = `${playerNames[currentPlayer]} ${diceValue} ${currentLanguage === 'dari' ? 'انداخت' : 'اچول'}`;
+                        gameInfoElement.textContent = `${getPlayerName(currentPlayer)} ${diceValue} ${currentLanguage === 'dari' ? 'انداخت' : 'اچول'}`;
                         
                         // Move player after a short delay
                         setTimeout(() => {
@@ -710,7 +714,7 @@
             function movePlayer(playerId, steps) {
                 if (playersPosition[playerId] === -1 && steps !== 6) {
                     // Player needs a 6 to start
-                    gameInfoElement.textContent = `${playerNames[playerId]} ${texts[currentLanguage].needSix}`;
+                    gameInfoElement.textContent = `${getPlayerName(playerId)} ${texts[currentLanguage].needSix}`;
                     setTimeout(nextPlayer, 1500);
                     isRolling = false;
                     return;
@@ -720,7 +724,7 @@
                     // Player can start
                     playersPosition[playerId] = 0;
                     updatePlayerPosition(playerId);
-                    gameInfoElement.textContent = `${playerNames[playerId]} ${texts[currentLanguage].started}`;
+                    gameInfoElement.textContent = `${getPlayerName(playerId)} ${texts[currentLanguage].started}`;
                     setTimeout(nextPlayer, 1500);
                     isRolling = false;
                     return;
@@ -729,8 +733,11 @@
                 let stepsRemaining = steps;
                 const moveInterval = setInterval(() => {
                     if (stepsRemaining > 0) {
-                        playersPosition[playerId] = (playersPosition[playerId] + 1) % totalSpaces;
-                        updatePlayerPosition(playerId);
+                        // Don't move beyond the last space
+                        if (playersPosition[playerId] < totalSpaces - 1) {
+                            playersPosition[playerId]++;
+                            updatePlayerPosition(playerId);
+                        }
                         stepsRemaining--;
                     } else {
                         clearInterval(moveInterval);
@@ -739,9 +746,14 @@
                         const spaceType = spaceTypes[playersPosition[playerId]].type;
                         
                         if (spaceType !== 'start' && spaceType !== 'end') {
+                            // Update event texts based on language
+                            const event = spaceEvents[spaceType];
+                            eventTitle.textContent = currentLanguage === 'dari' ? event.title : texts.pashto[spaceType + 'Event'];
+                            eventDescription.textContent = currentLanguage === 'dari' ? event.description : texts.pashto[spaceType + 'Desc'];
+                            
                             // Show event popup after a short delay
                             setTimeout(() => {
-                                showEvent(spaceEvents[spaceType], playerId);
+                                showEvent(event, playerId);
                             }, 500);
                         } else if (spaceType === 'end') {
                             // Player wins!
@@ -780,8 +792,6 @@
             
             // Show event popup
             function showEvent(event, playerId) {
-                eventTitle.textContent = event.title;
-                eventDescription.textContent = event.description;
                 eventPopup.classList.add('active');
                 
                 eventClose.onclick = () => {
@@ -793,7 +803,7 @@
                             movePlayer(playerId, event.move);
                         }, 500);
                     } else if (event.extraTurn) {
-                        gameInfoElement.textContent = `${playerNames[playerId]} ${texts[currentLanguage].inventoryDesc}`;
+                        gameInfoElement.textContent = `${getPlayerName(playerId)} ${currentLanguage === 'dari' ? event.description : texts.pashto.inventoryDesc}`;
                         isRolling = false;
                         // Don't call nextPlayer, current player goes again
                     } else {
@@ -808,7 +818,7 @@
             // Move to next player
             function nextPlayer() {
                 currentPlayer = (currentPlayer + 1) % totalPlayers;
-                gameInfoElement.textContent = `${texts[currentLanguage].turn} ${playerNames[currentPlayer]} ${currentLanguage === 'dari' ? 'است' : 'دی'}`;
+                gameInfoElement.textContent = `${texts[currentLanguage].turn} ${getPlayerName(currentPlayer)} ${texts[currentLanguage].is}`;
                 
                 // If it's a computer player, automatically roll after a delay
                 if (currentPlayer !== 0) {
@@ -829,7 +839,7 @@
                     finalScreen.classList.add('active');
                 } else {
                     // Computer player won
-                    gameInfoElement.textContent = `${playerNames[playerId]} ${currentLanguage === 'dari' ? 'برنده شد' : 'بریالی شو'}! ${currentLanguage === 'dari' ? 'بازی جدیدی شروع می شود' : 'نوې لوبه پیل کیږي'}.`;
+                    gameInfoElement.textContent = `${getPlayerName(playerId)} ${currentLanguage === 'dari' ? 'برنده شد' : 'بریالی شو'}! ${currentLanguage === 'dari' ? 'بازی جدیدی شروع می شود' : 'نوې لوبه پیل کیږي'}.`;
                     
                     // Restart game after a delay
                     setTimeout(() => {
@@ -841,7 +851,6 @@
             // Reset game
             function resetGame() {
                 playersPosition = Array(totalPlayers).fill(-1);
-                playersHomePosition = Array(totalPlayers).fill(0);
                 currentPlayer = 0;
                 gameActive = true;
                 isRolling = false;
