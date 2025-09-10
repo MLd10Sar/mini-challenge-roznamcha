@@ -122,8 +122,7 @@
   let vy = 0.5 + Math.random() * 1;
   const vx = (Math.random() - 0.5) * 1.5;
   const f = randomFruit(startX);
-  const radius = (f.type==='bomb')?26:(f.type==='roz'?34:22 + Math.random()*6);
-  
+const radius = (f.type === 'bomb') ? 32 : (f.type === 'roz' ? 40 : 28 + Math.random() * 6);  
   // Set gravity conditionally
   let gravity = 0.18; // default for normal fruits
   if (f.type === 'roz') {
