@@ -1,170 +1,188 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-<meta charset="UTF-8">
-<title>🏃‍♂️ Cash Flow Runner - بازی روزنامچه</title>
-<style>
-  body {
-    margin:0; padding:0;
-    font-family: "Tahoma", sans-serif;
-    overflow:hidden;
-    background:#222;
-  }
-  #gameCanvas {
-    display:block;
-    margin:0 auto;
-    background: linear-gradient(to top, #f2d16b 0%, #a1dffb 100%);
-    border-bottom:6px solid #654321;
-  }
-  #hud {
-    position:absolute; top:10px; left:10px;
-    font-size:20px; font-weight:bold;
-    background:rgba(0,0,0,0.6);
-    padding:8px 16px; border-radius:12px;
-    color:#fff; box-shadow:0 0 10px rgba(0,0,0,0.8);
-  }
-  #tutorial, #gameOver {
-    position:absolute; top:0; left:0; right:0; bottom:0;
-    background:rgba(0,0,0,0.8); color:#fff;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    text-align:center; padding:20px; z-index:10;
-    animation: fadeIn 0.5s;
-  }
-  #tutorial button, #gameOver a {
-    margin-top:20px; padding:12px 28px; font-size:18px;
-    border:none; border-radius:12px; cursor:pointer;
-    background:linear-gradient(45deg, #28a745, #45d672);
-    color:#fff; text-decoration:none;
-    transition: transform 0.2s;
-  }
-  #tutorial button:hover, #gameOver a:hover { transform:scale(1.1); }
-  #controls {
-    position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
-    display:flex; gap:20px; z-index:5;
-  }
-  #controls button {
-    padding:18px 20px; font-size:22px;
-    border:none; border-radius:50%; background:#007bff; color:#fff;
-    cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.5);
-    transition: transform 0.2s;
-  }
-  #controls button:active { transform:scale(0.9); }
-  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
-</style>
+  <meta charset="UTF-8" />
+  <title>روزنامچه 3D Demo</title>
+  <style>
+    body, html {
+      margin: 0; padding: 0; overflow: hidden;
+      height: 100%; width: 100%;
+      font-family: Tahoma, sans-serif;
+      background: #000;
+      color: white;
+      text-align: center;
+    }
+    #overlay {
+      position: absolute;
+      top: 10px; left: 0; right: 0;
+      z-index: 10;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    #download-screen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      display: none;
+    }
+    #download-screen h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #ffd700;
+    }
+    #download-screen p {
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+    .download-btn {
+      padding: 16px 30px;
+      background: #28a745;
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      text-decoration: none;
+    }
+    #controls {
+      position: absolute;
+      bottom: 20px; left: 0; right: 0;
+      display: flex; justify-content: center;
+      gap: 20px;
+      z-index: 15;
+    }
+    .ctrl-btn {
+      width: 70px; height: 70px;
+      border-radius: 50%;
+      font-size: 28px;
+      border: none;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-<canvas id="gameCanvas" width="400" height="600"></canvas>
-<div id="hud">امتیاز: <span id="score">0</span></div>
+  <div id="overlay">امتیاز: <span id="score">0</span></div>
 
-<!-- Tutorial Screen -->
-<div id="tutorial">
-  <h2>🏪 بازی روزنامچه</h2>
-  <p>💰 جمع آوری سکه = <b>سود</b></p>
-  <p>❌ برخورد با مانع = <b>ضرر</b></p>
-  <p>⚡ گرفتن روزنامچه = <b>محافظت ۵ ثانیه‌ای</b></p>
-  <p>فرار کن قبل از اینکه مامور مالیات بگیردت!</p>
-  <button onclick="startGame()">شروع بازی</button>
-</div>
+  <div id="controls">
+    <button class="ctrl-btn" id="left">⬅️</button>
+    <button class="ctrl-btn" id="right">➡️</button>
+  </div>
 
-<!-- Game Over Screen -->
-<div id="gameOver" style="display:none;">
-  <h2>بازی تمام شد 😢</h2>
-  <p>امتیاز شما: <span id="finalScore"></span></p>
-  <p>برای مدیریت واقعی دکانت، <b>روزنامچه</b> را دانلود کن:</p>
-  <a href="https://mld10sar.github.io/Esmat/app-release.apk" download>📥 دانلود نسخه کامل</a>
-</div>
+  <div id="download-screen">
+    <h1>🎉 تبریک!</h1>
+    <p>شما سود جمع کردید. حالا در دنیای واقعی هم برنده باشید.</p>
+    <a href="https://mld10sar.github.io/Esmat/app-release.apk" class="download-btn" download>📥 دانلود روزنامچه</a>
+  </div>
 
-<!-- Controls (for mobile) -->
-<div id="controls">
-  <button onclick="moveUp()">⬆️</button>
-  <button onclick="moveDown()">⬇️</button>
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
+  <script>
+    // Scene setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-<script>
-const canvas=document.getElementById("gameCanvas");
-const ctx=canvas.getContext("2d");
+    // Lighting
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(0,10,5);
+    scene.add(light);
 
-let gameInterval,bgX=0,score=0;
-let gameRunning=false,boost=false,boostTimer=0;
-let lanes=[150,300,450];
-let player={x:60,y:lanes[1],lane:1,size:40,color:"blue"};
-let obstacles=[],coins=[],boosts=[];
-let taxCollectorX=-60;
+    // Player
+    const playerGeo = new THREE.BoxGeometry(1,1,1);
+    const playerMat = new THREE.MeshStandardMaterial({color:0x007bff});
+    const player = new THREE.Mesh(playerGeo, playerMat);
+    player.position.set(0,0,5);
+    scene.add(player);
+    let lane = 0; // -1 left, 0 middle, 1 right
 
-function startGame(){
-  document.getElementById("tutorial").style.display="none";
-  document.getElementById("gameOver").style.display="none";
-  gameRunning=true;
-  score=0; obstacles=[]; coins=[]; boosts=[];
-  taxCollectorX=-60; player.lane=1; player.y=lanes[1];
-  boost=false;
-  gameInterval=setInterval(update,1000/60);
-}
+    // Floor
+    const floorGeo = new THREE.PlaneGeometry(20,200);
+    const floorMat = new THREE.MeshStandardMaterial({color:0x333333});
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI/2;
+    floor.position.z = -90;
+    scene.add(floor);
 
-function moveUp(){ if(player.lane>0){ player.lane--; player.y=lanes[player.lane]; } }
-function moveDown(){ if(player.lane<2){ player.lane++; player.y=lanes[player.lane]; } }
-document.addEventListener("keydown",e=>{
-  if(e.key==="ArrowUp") moveUp();
-  if(e.key==="ArrowDown") moveDown();
-});
+    // Obstacles & Coins
+    let objects = [];
+    let score = 0;
+    let invincible = false;
+    let startTime = Date.now();
 
-function spawn(){
-  if(Math.random()<0.04) obstacles.push({x:400,y:lanes[Math.floor(Math.random()*3)],size:40});
-  if(Math.random()<0.06) coins.push({x:400,y:lanes[Math.floor(Math.random()*3)],size:25});
-  if(Math.random()<0.01) boosts.push({x:400,y:lanes[Math.floor(Math.random()*3)],size:30});
-}
+    function spawnItem() {
+      const type = Math.random()<0.7?"coin":"obstacle";
+      const geo = new THREE.BoxGeometry(1,1,1);
+      const mat = new THREE.MeshStandardMaterial({color: type==="coin"?0xffd700:0xff0000});
+      const item = new THREE.Mesh(geo, mat);
+      const laneChoice = [-2,0,2][Math.floor(Math.random()*3)];
+      item.position.set(laneChoice,0,-100);
+      item.userData = {type};
+      scene.add(item);
+      objects.push(item);
+    }
 
-function update(){
-  ctx.clearRect(0,0,400,600);
-  // Background gradient sky
-  ctx.fillStyle="#a1dffb"; ctx.fillRect(0,0,400,600);
-  ctx.fillStyle="#654321"; ctx.fillRect(0,550,400,50); // ground
-  
-  // Player
-  ctx.fillStyle=boost?"gold":player.color;
-  ctx.beginPath(); ctx.arc(player.x,player.y,player.size/2,0,Math.PI*2); ctx.fill();
-  if(boost) ctx.shadowColor="gold",ctx.shadowBlur=20;
-  else ctx.shadowBlur=0;
+    // Spawn every 1s
+    setInterval(spawnItem,1000);
 
-  // Tax collector
-  ctx.fillStyle="darkred"; ctx.fillRect(taxCollectorX,0,50,600);
-  taxCollectorX+=0.5;
+    // Controls
+    document.getElementById("left").onclick=()=>{lane=Math.max(-1,lane-1);};
+    document.getElementById("right").onclick=()=>{lane=Math.min(1,lane+1);};
+    window.addEventListener("keydown",(e)=>{
+      if(e.key==="ArrowLeft") lane=Math.max(-1,lane-1);
+      if(e.key==="ArrowRight") lane=Math.min(1,lane+1);
+    });
 
-  spawn();
-  // Obstacles
-  for(let i=obstacles.length-1;i>=0;i--){
-    let o=obstacles[i]; o.x-=4;
-    ctx.fillStyle="#333"; ctx.fillRect(o.x,o.y-20,o.size,o.size);
-    if(o.x<0) obstacles.splice(i,1);
-    if(collide(player,o)&&!boost){endGame(); return;}
-  }
-  // Coins
-  for(let i=coins.length-1;i>=0;i--){
-    let c=coins[i]; c.x-=4;
-    ctx.fillStyle="yellow"; ctx.beginPath(); ctx.arc(c.x,c.y,12,0,Math.PI*2); ctx.fill();
-    if(c.x<0) coins.splice(i,1);
-    if(collide(player,c)){score+=10; coins.splice(i,1);}
-  }
-  // Boosts
-  for(let i=boosts.length-1;i>=0;i--){
-    let b=boosts[i]; b.x-=4;
-    ctx.fillStyle="lime"; ctx.beginPath(); ctx.arc(b.x,b.y,15,0,Math.PI*2); ctx.fill();
-    if(b.x<0) boosts.splice(i,1);
-    if(collide(player,b)){boost=true; boostTimer=300; boosts.splice(i,1);}
-  }
-  if(boost){boostTimer--; if(boostTimer<=0) boost=false;}
-  if(player.x<=taxCollectorX+50){endGame(); return;}
-  score++; document.getElementById("score").textContent=score;
-}
+    // Game loop
+    function animate(){
+      requestAnimationFrame(animate);
+      player.position.x = lane*2;
 
-function collide(a,b){
-  return Math.abs(a.x-b.x)<(a.size/2+b.size/2)&&Math.abs(a.y-b.y)<(a.size/2+b.size/2);
-}
-function endGame(){
-  clearInterval(gameInterval); gameRunning=false;
-  document.getElementById("finalScore").textContent=score;
-  document.getElementById("gameOver").style.display="flex";
-}
-</script>
+      objects.forEach((o)=>{
+        o.position.z += 0.5; // move toward player
+        if(o.position.distanceTo(player.position)<1){
+          if(o.userData.type==="coin"){
+            score+=10;
+            document.getElementById("score").innerText=score;
+            scene.remove(o);
+          } else if(!invincible) {
+            score=Math.max(0,score-20);
+            document.getElementById("score").innerText=score;
+            invincible=true;
+            player.material.color.set(0x00ff00);
+            setTimeout(()=>{
+              invincible=false;
+              player.material.color.set(0x007bff);
+            },2000);
+          }
+        }
+      });
+      objects = objects.filter(o=>o.position.z<10);
+
+      renderer.render(scene,camera);
+
+      // End after 15s
+      if(Date.now()-startTime>15000){
+        document.getElementById("download-screen").style.display="flex";
+      }
+    }
+    camera.position.set(0,5,10);
+    camera.lookAt(0,0,0);
+    animate();
+
+    window.addEventListener("resize",()=>{
+      camera.aspect=window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
 </body>
 </html>
