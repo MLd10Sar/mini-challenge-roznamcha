@@ -104,7 +104,7 @@
       const gravity = 0.28;
 
       // spawn settings
-      let spawnInterval = 700; // ms
+      let spawnInterval = 800; // ms
       let lastSpawn = 0;
 
       // Roznamcha fruit appears about 1 in 12 spawns
@@ -116,22 +116,28 @@
         return {type: kinds[Math.floor(Math.random()*kinds.length)]};
       }
 
-     function spawn(now){
+   function spawn(now){
   lastSpawn = now;
   const startX = 40 + Math.random() * (canvas.width/devicePixelRatio - 80);
-  const vy = 1 + Math.random() * 2; // small downward velocity
-  const vx = (Math.random() - 0.5) * 2; // slight horizontal drift
+  let vy = 0.5 + Math.random() * 1;
+  const vx = (Math.random() - 0.5) * 1.5;
   const f = randomFruit(startX);
   const radius = (f.type==='bomb')?26:(f.type==='roz'?34:22 + Math.random()*6);
   
-  // Spawn at the TOP of the screen
+  // Set gravity conditionally
+  let gravity = 0.18; // default for normal fruits
+  if (f.type === 'roz') {
+    vy *= 0.7;       // slower initial fall for Roznamcha fruit
+    gravity = 0.12;  // override gravity to make it float gently
+  }
+
   fruits.push({
     x: startX,
-    y: -radius, // Start slightly above the canvas
+    y: -radius,
     vx,
     vy,
     ax: 0,
-    ay: gravity,
+    ay: gravity,     // ✅ This is where you "pass" it — just use the variable!
     r: radius,
     type: f.type,
     spawned: now,
@@ -139,7 +145,6 @@
     shards: []
   });
 }
-
       // drawing helpers
       function drawFruit(fr){
         ctx.save();
@@ -292,8 +297,9 @@
       requestAnimationFrame(loop);
 
       // spawn rhythm control
-      setInterval(()=>{ if(spawnInterval>380) spawnInterval = Math.max(380, spawnInterval - 10); }, 5000);
-
+setInterval(()=>{ 
+  if(spawnInterval > 500) spawnInterval = Math.max(500, spawnInterval - 10); // slower ramp-up
+}, 5000);
       // small tutorial auto-touch for first run
       setTimeout(()=>{ // spawn a few fruits quickly so player sees
         for(let i=0;i<3;i++) spawn(performance.now() + i*120);
