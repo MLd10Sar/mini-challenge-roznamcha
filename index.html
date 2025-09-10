@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ps">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>د پیسو جریان تعقیب | Cash Flow Chase</title>
+  <title>Cash Flow Runner 3D</title>
   <style>
     * {
       margin: 0;
@@ -16,8 +16,8 @@
     body {
       margin: 0;
       overflow: hidden;
-      background: linear-gradient(to bottom, #0a0a2a, #1a1a4a);
-      font-family: 'Arial', 'Nassim', 'Arial Rounded MT Bold', sans-serif;
+      background: linear-gradient(to bottom, #1a1a2e, #16213e);
+      font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
       color: white;
     }
     
@@ -25,6 +25,7 @@
       position: relative;
       width: 100%;
       height: 100vh;
+      overflow: hidden;
     }
     
     #ui-overlay {
@@ -46,12 +47,14 @@
       border-radius: 20px;
       backdrop-filter: blur(5px);
       border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
     
     #score {
       font-size: 24px;
       font-weight: bold;
       color: #ffd700;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
     }
     
     #distance-container {
@@ -63,12 +66,14 @@
       border-radius: 20px;
       backdrop-filter: blur(5px);
       border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
     
     #distance {
       font-size: 24px;
       font-weight: bold;
       color: #ff5555;
+      text-shadow: 0 0 10px rgba(255, 85, 85, 0.5);
     }
     
     #mobile-controls {
@@ -79,6 +84,7 @@
       justify-content: space-between;
       padding: 0 30px;
       pointer-events: auto;
+      z-index: 110;
     }
     
     .control-pad {
@@ -91,6 +97,7 @@
       align-items: center;
       backdrop-filter: blur(5px);
       border: 2px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
     
     .control-button {
@@ -104,18 +111,12 @@
       font-size: 24px;
       color: white;
       transition: all 0.1s ease;
+      pointer-events: auto;
     }
     
-    #left-pad {
-      flex-direction: row;
-      gap: 10px;
-      display: flex;
-    }
-    
-    #right-pad {
-      flex-direction: row;
-      gap: 10px;
-      display: flex;
+    .control-button:active {
+      background: rgba(255, 255, 255, 0.4);
+      transform: scale(0.9);
     }
     
     #start-screen, #game-over {
@@ -131,7 +132,7 @@
       background: rgba(0, 0, 0, 0.85);
       z-index: 200;
       backdrop-filter: blur(10px);
-      text-align: center;
+      transition: opacity 0.5s ease;
     }
     
     #game-over {
@@ -139,7 +140,7 @@
     }
     
     .title {
-      font-size: 42px;
+      font-size: 48px;
       margin-bottom: 20px;
       background: linear-gradient(to right, #ffd700, #ffaa00);
       -webkit-background-clip: text;
@@ -148,7 +149,7 @@
     }
     
     .subtitle {
-      font-size: 22px;
+      font-size: 24px;
       margin-bottom: 30px;
       text-align: center;
       max-width: 80%;
@@ -170,6 +171,11 @@
       pointer-events: auto;
     }
     
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 119, 255, 0.6);
+    }
+    
     .btn:active {
       transform: scale(0.95);
     }
@@ -185,6 +191,12 @@
       text-shadow: 0 0 10px rgba(255, 85, 85, 0.7);
       opacity: 0;
       transition: opacity 0.3s ease;
+      animation: pulse-warning 1.5s infinite alternate;
+    }
+    
+    @keyframes pulse-warning {
+      0% { opacity: 0.7; }
+      100% { opacity: 1; }
     }
     
     #progress-bar {
@@ -197,6 +209,7 @@
       background: rgba(255, 255, 255, 0.2);
       border-radius: 5px;
       overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
     
     #progress-fill {
@@ -205,6 +218,34 @@
       background: linear-gradient(to right, #ff5555, #ffd700);
       transform-origin: left center;
       transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    
+    #power-ups {
+      position: absolute;
+      bottom: 200px;
+      left: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    
+    .power-up {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      opacity: 0.3;
+      transition: all 0.3s ease;
+    }
+    
+    .power-up.active {
+      opacity: 1;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
     }
     
     #download-promo {
@@ -225,28 +266,26 @@
       font-weight: bold;
     }
     
-    #language-selector {
+    .coin-effect {
       position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 10px;
-      z-index: 300;
+      width: 20px;
+      height: 20px;
+      background: radial-gradient(circle, #ffd700, #ffaa00);
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0;
+      animation: coin-collect 1s forwards;
     }
     
-    .lang-btn {
-      padding: 8px 15px;
-      background: rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 20px;
-      color: white;
-      cursor: pointer;
-      backdrop-filter: blur(5px);
-    }
-    
-    .lang-btn.active {
-      background: rgba(0, 119, 255, 0.7);
+    @keyframes coin-collect {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(3) translateY(-100px);
+        opacity: 0;
+      }
     }
   </style>
 </head>
@@ -259,9 +298,13 @@
       <div id="distance-container">
         <div id="distance">📏 100m</div>
       </div>
-      <div id="chase-warning">د قرض راټولونکی نږدی دی!</div>
+      <div id="chase-warning">DEBT COLLECTOR IS CLOSE!</div>
       <div id="progress-bar">
         <div id="progress-fill"></div>
+      </div>
+      <div id="power-ups">
+        <div class="power-up" id="speed-boost">⚡</div>
+        <div class="power-up" id="shield">🛡️</div>
       </div>
     </div>
     
@@ -274,27 +317,21 @@
       </div>
     </div>
     
-    <div id="language-selector">
-      <button class="lang-btn active" id="pashto-btn">پښتو</button>
-      <button class="lang-btn" id="dari-btn">دری</button>
-      <button class="lang-btn" id="english-btn">English</button>
-    </div>
-    
     <div id="start-screen">
-      <h1 class="title">د پیسو جریان تعقیب</h1>
-      <p class="subtitle">د قرض راټولونکی څخه تښتئ او د سود سکې راټولوئ!<br>مخکې ولاړ شه او خپل سوداګرې وده کړه.</p>
-      <button class="btn" id="start-btn">پیل بازی</button>
+      <h1 class="title">CASH FLOW CHASE</h1>
+      <p class="subtitle">Run from the Debt Collector while collecting profit coins!<br>Stay ahead and build your business.</p>
+      <button class="btn" id="start-btn">START RUNNING</button>
     </div>
     
     <div id="game-over">
-      <h2 class="title">د قرض راټولونکی نیولی!</h2>
-      <p class="subtitle" id="final-score">ستاسې عاید: ۰</p>
-      <p class="subtitle">آیا کولی شئ بل ځل وځنډوئ؟</p>
-      <button class="btn" id="restart-btn">بیا هڅه</button>
+      <h2 class="title">CAUGHT BY DEBT COLLECTOR!</h2>
+      <p class="subtitle" id="final-score">You earned: $0</p>
+      <p class="subtitle">Can you outrun them next time?</p>
+      <button class="btn" id="restart-btn">TRY AGAIN</button>
     </div>
     
     <div id="download-promo">
-      <a href="#" id="download-link">📱 زموږ اپلیکیشن د نورو مالیي ستونزو لپاره ډاونلوډ کړئ!</a>
+      <a href="#" id="download-link">📱 Download our app for more financial challenges!</a>
     </div>
   </div>
 
@@ -308,50 +345,10 @@
     let gameSpeed = 0.2;
     let chaseDistance = 100;
     let chaseSpeed = 0.22;
-    let currentLanguage = 'pashto';
-    
-    // Language texts
-    const languageTexts = {
-      pashto: {
-        title: "د پیسو جریان تعقیب",
-        subtitle: "د قرض راټولونکی څخه تښتئ او د سود سکې راټولوئ!<br>مخکې ولاړ شه او خپل سوداګرې وده کړه.",
-        startBtn: "پیل بازی",
-        gameOverTitle: "د قرض راټولونکی نیولی!",
-        finalScore: "ستاسې عاید: ",
-        tryAgain: "آیا کولی شئ بل ځل وځنډوئ؟",
-        restartBtn: "بیا هڅه",
-        downloadText: "📱 زموږ اپلیکیشن د نورو مالیي ستونزو لپاره ډاونلوډ کړئ!",
-        warning: "د قرض راټولونکی نږدی دی!",
-        score: "💰 ",
-        distance: "📏 "
-      },
-      dari: {
-        title: "تعقیب جریان پول",
-        subtitle: "از جمع‌آورنده بدهی فرار کنید و سکه‌های سود جمع کنید!<br>جلو بروید و تجارت خود را رشد دهید.",
-        startBtn: "شروع بازی",
-        gameOverTitle: "جمع‌آورنده بدهی گرفتار شد!",
-        finalScore: "درآمد شما: ",
-        tryAgain: "آیا می‌توانید دفعه بعد فرار کنید؟",
-        restartBtn: "دوباره تلاش کنید",
-        downloadText: "📱 برنامه ما را برای چالش‌های مالی بیشتر دانلود کنید!",
-        warning: "جمع‌آورنده بدهی نزدیک است!",
-        score: "💰 ",
-        distance: "📏 "
-      },
-      english: {
-        title: "Cash Flow Chase",
-        subtitle: "Escape from the Debt Collector and collect profit coins!<br>Move forward and grow your business.",
-        startBtn: "Start Game",
-        gameOverTitle: "Caught by Debt Collector!",
-        finalScore: "Your earnings: ",
-        tryAgain: "Can you escape next time?",
-        restartBtn: "Try Again",
-        downloadText: "📱 Download our app for more financial challenges!",
-        warning: "Debt Collector is close!",
-        score: "💰 ",
-        distance: "📏 "
-      }
-    };
+    let playerSpeed = 0.2;
+    let hasShield = false;
+    let hasSpeedBoost = false;
+    let speedBoostTime = 0;
     
     // UI elements
     const startScreen = document.getElementById('start-screen');
@@ -364,15 +361,8 @@
     const chaseWarning = document.getElementById('chase-warning');
     const progressFill = document.getElementById('progress-fill');
     const downloadLink = document.getElementById('download-link');
-    const titleElement = document.querySelector('#start-screen .title');
-    const subtitleElement = document.querySelector('#start-screen .subtitle');
-    const gameOverTitle = document.querySelector('#game-over .title');
-    const tryAgainElement = document.querySelector('#game-over .subtitle:nth-child(3)');
-    
-    // Language buttons
-    const pashtoBtn = document.getElementById('pashto-btn');
-    const dariBtn = document.getElementById('dari-btn');
-    const englishBtn = document.getElementById('english-btn');
+    const speedBoostPowerUp = document.getElementById('speed-boost');
+    const shieldPowerUp = document.getElementById('shield');
     
     // Mobile controls
     const leftBtn = document.getElementById('left-btn');
@@ -484,6 +474,7 @@
     // Obstacles and coins
     const obstacles = [];
     const coins = [];
+    const powerUps = [];
     
     function spawnObstacle(zPos) {
       const geo = new THREE.CylinderGeometry(1, 1, 2, 8);
@@ -521,10 +512,34 @@
       coin.add(coinLight);
     }
     
+    function spawnPowerUp(zPos, type) {
+      const geo = new THREE.TetrahedronGeometry(1, 0);
+      const mat = new THREE.MeshStandardMaterial({ 
+        color: type === 'speed' ? 0x00ff00 : 0x00aaff,
+        emissive: type === 'speed' ? 0x004400 : 0x002266,
+        emissiveIntensity: 0.5,
+        metalness: 0.7,
+        roughness: 0.2
+      });
+      const powerUp = new THREE.Mesh(geo, mat);
+      powerUp.position.set((Math.random() > 0.5 ? -3 : 3), 1.5, zPos);
+      powerUp.userData = { type };
+      scene.add(powerUp);
+      powerUps.push(powerUp);
+      
+      // Add point light to power-up
+      const powerUpLight = new THREE.PointLight(type === 'speed' ? 0x00ff00 : 0x00aaff, 0.7, 8);
+      powerUpLight.position.set(0, 0, 0);
+      powerUp.add(powerUpLight);
+    }
+    
     // Initialize objects
     for (let i = -20; i > -200; i -= 8) {
-      if (Math.random() > 0.5) spawnObstacle(i);
-      else spawnCoin(i);
+      const rand = Math.random();
+      if (rand < 0.4) spawnObstacle(i);
+      else if (rand < 0.8) spawnCoin(i);
+      else if (rand < 0.9) spawnPowerUp(i, 'speed');
+      else if (rand < 1.0) spawnPowerUp(i, 'shield');
     }
     
     // Movement
@@ -586,56 +601,30 @@
       resetLane();
     });
     
-    // Language selection
-    pashtoBtn.addEventListener("click", () => {
-      setLanguage('pashto');
-      pashtoBtn.classList.add('active');
-      dariBtn.classList.remove('active');
-      englishBtn.classList.remove('active');
+    // Touch swipe controls
+    let touchStartX = null;
+    window.addEventListener("touchstart", (e) => {
+      if (!gameStarted || gameOver) return;
+      touchStartX = e.touches[0].clientX;
     });
     
-    dariBtn.addEventListener("click", () => {
-      setLanguage('dari');
-      dariBtn.classList.add('active');
-      pashtoBtn.classList.remove('active');
-      englishBtn.classList.remove('active');
+    window.addEventListener("touchmove", (e) => {
+      if (!gameStarted || gameOver || touchStartX === null) return;
+      e.preventDefault();
     });
     
-    englishBtn.addEventListener("click", () => {
-      setLanguage('english');
-      englishBtn.classList.add('active');
-      pashtoBtn.classList.remove('active');
-      dariBtn.classList.remove('active');
+    window.addEventListener("touchend", (e) => {
+      if (!gameStarted || gameOver || touchStartX === null) return;
+      
+      const touchEndX = e.changedTouches[0].clientX;
+      const diff = touchEndX - touchStartX;
+      
+      if (diff > 50) moveRight();
+      else if (diff < -50) moveLeft();
+      else resetLane();
+      
+      touchStartX = null;
     });
-    
-    function setLanguage(lang) {
-      currentLanguage = lang;
-      const texts = languageTexts[lang];
-      
-      titleElement.textContent = texts.title;
-      subtitleElement.innerHTML = texts.subtitle;
-      startBtn.textContent = texts.startBtn;
-      gameOverTitle.textContent = texts.gameOverTitle;
-      tryAgainElement.textContent = texts.tryAgain;
-      restartBtn.textContent = texts.restartBtn;
-      downloadLink.textContent = texts.downloadText;
-      chaseWarning.textContent = texts.warning;
-      
-      updateScoreDisplay();
-      updateDistanceDisplay();
-      
-      if (gameOver) {
-        finalScore.textContent = texts.finalScore + score;
-      }
-    }
-    
-    function updateScoreDisplay() {
-      scoreDisplay.textContent = languageTexts[currentLanguage].score + score;
-    }
-    
-    function updateDistanceDisplay() {
-      distanceDisplay.textContent = languageTexts[currentLanguage].distance + Math.round(chaseDistance) + "m";
-    }
     
     // Start game button
     startBtn.addEventListener("click", () => {
@@ -656,25 +645,40 @@
     // Download link
     downloadLink.addEventListener("click", (e) => {
       e.preventDefault();
-      alert(currentLanguage === 'pashto' 
-        ? "ستاسې علاقې مننه! زموږ اپلیکیشن ډاونلوډ کیږي..." 
-        : currentLanguage === 'dari' 
-          ? "از علاقه شما متشکریم! برنامه ما در حال دانلود است..." 
-          : "Thank you for your interest! Downloading our app...");
+      alert("Thank you for your interest! Downloading our app...");
     });
+    
+    // Create coin collection effect
+    function createCoinEffect(x, y) {
+      const effect = document.createElement('div');
+      effect.className = 'coin-effect';
+      effect.style.left = `${x}px`;
+      effect.style.top = `${y}px`;
+      document.getElementById('game-container').appendChild(effect);
+      
+      setTimeout(() => {
+        effect.remove();
+      }, 1000);
+    }
     
     // Reset game state
     function resetGame() {
       score = 0;
       distance = 100;
       gameSpeed = 0.2;
+      playerSpeed = 0.2;
       chaseSpeed = 0.22;
       chaseDistance = 100;
-      updateScoreDisplay();
-      updateDistanceDisplay();
+      hasShield = false;
+      hasSpeedBoost = false;
+      speedBoostTime = 0;
+      scoreDisplay.textContent = `💰 ${score}`;
+      distanceDisplay.textContent = `📏 ${Math.round(distance)}m`;
       playerX = 0;
       player.position.x = 0;
       chaser.position.z = -chaseDistance;
+      speedBoostPowerUp.classList.remove('active');
+      shieldPowerUp.classList.remove('active');
       
       // Reset obstacles and coins
       obstacles.forEach(obs => {
@@ -685,6 +689,11 @@
       coins.forEach(coin => {
         coin.position.z = -200 + Math.random() * -50;
         coin.position.x = (Math.random() > 0.5 ? -3 : 3);
+      });
+      
+      powerUps.forEach(powerUp => {
+        powerUp.position.z = -200 + Math.random() * -50;
+        powerUp.position.x = (Math.random() > 0.5 ? -3 : 3);
       });
     }
     
@@ -708,7 +717,7 @@
       
       // Move floor objects
       obstacles.forEach((obs) => {
-        obs.position.z += gameSpeed;
+        obs.position.z += playerSpeed;
         obs.rotation.y += 0.02;
         
         if (obs.position.z > 5) {
@@ -719,13 +728,19 @@
         // Collision detection
         if (Math.abs(player.position.x - obs.position.x) < 1.5 &&
             Math.abs(player.position.z - obs.position.z) < 1.5) {
-          endGame();
-          return;
+          if (hasShield) {
+            hasShield = false;
+            shieldPowerUp.classList.remove('active');
+            obs.position.z = -200;
+          } else {
+            endGame();
+            return;
+          }
         }
       });
       
       coins.forEach((coin) => {
-        coin.position.z += gameSpeed;
+        coin.position.z += playerSpeed;
         coin.rotation.y += 0.05;
         
         if (coin.position.z > 5) {
@@ -736,14 +751,59 @@
         if (Math.abs(player.position.x - coin.position.x) < 1.5 &&
             Math.abs(player.position.z - coin.position.z) < 1.5) {
           score += 10;
-          updateScoreDisplay();
+          scoreDisplay.textContent = `💰 ${score}`;
           coin.position.z = -200;
           coin.position.x = (Math.random() > 0.5 ? -3 : 3);
           
-          // Speed up slightly when collecting coins
-          gameSpeed += 0.001;
+          // Create visual effect
+          createCoinEffect(
+            window.innerWidth / 2 + (Math.random() - 0.5) * 100,
+            window.innerHeight / 2 + (Math.random() - 0.5) * 100
+          );
+          
+          // Slight speed increase when collecting coins
+          playerSpeed += 0.001;
         }
       });
+      
+      // Handle power-ups
+      powerUps.forEach((powerUp) => {
+        powerUp.position.z += playerSpeed;
+        powerUp.rotation.x += 0.05;
+        powerUp.rotation.y += 0.05;
+        
+        if (powerUp.position.z > 5) {
+          powerUp.position.z = -200;
+          powerUp.position.x = (Math.random() > 0.5 ? -3 : 3);
+        }
+        
+        if (Math.abs(player.position.x - powerUp.position.x) < 1.5 &&
+            Math.abs(player.position.z - powerUp.position.z) < 1.5) {
+          
+          if (powerUp.userData.type === 'speed') {
+            hasSpeedBoost = true;
+            speedBoostTime = 300; // 5 seconds at 60fps
+            speedBoostPowerUp.classList.add('active');
+            playerSpeed += 0.1;
+          } else if (powerUp.userData.type === 'shield') {
+            hasShield = true;
+            shieldPowerUp.classList.add('active');
+          }
+          
+          powerUp.position.z = -200;
+          powerUp.position.x = (Math.random() > 0.5 ? -3 : 3);
+        }
+      });
+      
+      // Handle speed boost timer
+      if (hasSpeedBoost) {
+        speedBoostTime--;
+        if (speedBoostTime <= 0) {
+          hasSpeedBoost = false;
+          playerSpeed -= 0.1;
+          speedBoostPowerUp.classList.remove('active');
+        }
+      }
       
       // Move chaser
       chaser.position.z += chaseSpeed;
@@ -751,7 +811,7 @@
       
       // Calculate distance between player and chaser
       chaseDistance = player.position.z - chaser.position.z;
-      updateDistanceDisplay();
+      distanceDisplay.textContent = `📏 ${Math.round(chaseDistance)}m`;
       
       // Update progress bar
       const progress = 1 - (chaseDistance / 100);
@@ -765,7 +825,7 @@
       }
       
       // Increase chaser speed over time
-      chaseSpeed += 0.0001;
+      chaseSpeed += 0.00005;
       
       // Check if chaser caught player
       if (chaseDistance < 2) {
@@ -778,7 +838,7 @@
     
     function endGame() {
       gameOver = true;
-      finalScore.textContent = languageTexts[currentLanguage].finalScore + score;
+      finalScore.textContent = `You earned: $${score}`;
       gameOverScreen.style.display = "flex";
     }
     
