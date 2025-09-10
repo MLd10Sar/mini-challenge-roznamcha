@@ -1,867 +1,299 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Cash Flow Runner 3D</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>دموی لودو — تبلیغ روزنامچه</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
+    :root{
+      --bg:#0f1724; --card:#fff; --muted:#6b7280;
+      --p1:#ef4444; --p2:#3b82f6; --p3:#f59e0b; --p4:#10b981;
+      --space-size:44px;
+      --board-size:min(520px,90vw);
     }
-    
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: linear-gradient(to bottom, #1a1a2e, #16213e);
-      font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
-      color: white;
-    }
-    
-    #game-container {
-      position: relative;
-      width: 100%;
-      height: 100vh;
-      overflow: hidden;
-    }
-    
-    #ui-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 100;
-    }
-    
-    #score-container {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 10px 20px;
-      border-radius: 20px;
-      backdrop-filter: blur(5px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    }
-    
-    #score {
-      font-size: 24px;
-      font-weight: bold;
-      color: #ffd700;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-    }
-    
-    #distance-container {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 10px 20px;
-      border-radius: 20px;
-      backdrop-filter: blur(5px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    }
-    
-    #distance {
-      font-size: 24px;
-      font-weight: bold;
-      color: #ff5555;
-      text-shadow: 0 0 10px rgba(255, 85, 85, 0.5);
-    }
-    
-    #mobile-controls {
-      position: absolute;
-      bottom: 30px;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      padding: 0 30px;
-      pointer-events: auto;
-      z-index: 110;
-    }
-    
-    .control-pad {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.4);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      backdrop-filter: blur(5px);
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    }
-    
-    .control-button {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.2);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 24px;
-      color: white;
-      transition: all 0.1s ease;
-      pointer-events: auto;
-    }
-    
-    .control-button:active {
-      background: rgba(255, 255, 255, 0.4);
-      transform: scale(0.9);
-    }
-    
-    #start-screen, #game-over {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 200;
-      backdrop-filter: blur(10px);
-      transition: opacity 0.5s ease;
-    }
-    
-    #game-over {
-      display: none;
-    }
-    
-    .title {
-      font-size: 48px;
-      margin-bottom: 20px;
-      background: linear-gradient(to right, #ffd700, #ffaa00);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-    }
-    
-    .subtitle {
-      font-size: 24px;
-      margin-bottom: 30px;
-      text-align: center;
-      max-width: 80%;
-      line-height: 1.5;
-      color: #aaaaaa;
-    }
-    
-    .btn {
-      padding: 15px 40px;
-      font-size: 20px;
-      background: linear-gradient(to right, #0077ff, #0055cc);
-      border: none;
-      border-radius: 50px;
-      color: white;
-      cursor: pointer;
-      margin-top: 20px;
-      box-shadow: 0 4px 15px rgba(0, 119, 255, 0.4);
-      transition: all 0.3s ease;
-      pointer-events: auto;
-    }
-    
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 119, 255, 0.6);
-    }
-    
-    .btn:active {
-      transform: scale(0.95);
-    }
-    
-    #chase-warning {
-      position: absolute;
-      bottom: 180px;
-      width: 100%;
-      text-align: center;
-      font-size: 24px;
-      color: #ff5555;
-      font-weight: bold;
-      text-shadow: 0 0 10px rgba(255, 85, 85, 0.7);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      animation: pulse-warning 1.5s infinite alternate;
-    }
-    
-    @keyframes pulse-warning {
-      0% { opacity: 0.7; }
-      100% { opacity: 1; }
-    }
-    
-    #progress-bar {
-      position: absolute;
-      bottom: 150px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80%;
-      height: 10px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 5px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-    
-    #progress-fill {
-      height: 100%;
-      width: 100%;
-      background: linear-gradient(to right, #ff5555, #ffd700);
-      transform-origin: left center;
-      transform: scaleX(0);
-      transition: transform 0.3s ease;
-    }
-    
-    #power-ups {
-      position: absolute;
-      bottom: 200px;
-      left: 20px;
-      display: flex;
-      gap: 10px;
-    }
-    
-    .power-up {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.6);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 20px;
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      opacity: 0.3;
-      transition: all 0.3s ease;
-    }
-    
-    .power-up.active {
-      opacity: 1;
-      box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
-    }
-    
-    #download-promo {
-      position: absolute;
-      bottom: 30px;
-      width: 100%;
-      text-align: center;
-      font-size: 16px;
-      padding: 15px;
-      background: linear-gradient(to right, rgba(0, 119, 255, 0.7), rgba(0, 85, 204, 0.7));
-      z-index: 150;
-      pointer-events: auto;
-    }
-    
-    #download-promo a {
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    
-    .coin-effect {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      background: radial-gradient(circle, #ffd700, #ffaa00);
-      border-radius: 50%;
-      pointer-events: none;
-      opacity: 0;
-      animation: coin-collect 1s forwards;
-    }
-    
-    @keyframes coin-collect {
-      0% {
-        transform: scale(1);
-        opacity: 1;
-      }
-      100% {
-        transform: scale(3) translateY(-100px);
-        opacity: 0;
-      }
-    }
+    html,body{height:100%;margin:0;font-family:Vazirmatn,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#071033 0%, #071a2b 100%);padding:18px}
+    .card{width:var(--board-size);background:var(--card);border-radius:16px;box-shadow:0 20px 50px rgba(2,6,23,.6);overflow:hidden}
+    header{padding:14px 18px;border-bottom:1px solid #f1f5f9;display:flex;gap:12px;align-items:center;justify-content:space-between}
+    header h1{font-size:1.05rem;margin:0;color:#0f1724}
+    header .promo{display:flex;gap:8px;align-items:center}
+    .promo a{background:var(--p2);color:white;padding:8px 12px;border-radius:10px;text-decoration:none;font-weight:700}
+
+    .board-wrap{display:flex;flex-direction:column;align-items:center;padding:18px}
+    .board{width:100%;max-width:480px;height:480px;position:relative;background:linear-gradient(180deg,#f8fafc, #ffffff);border-radius:12px;display:flex;align-items:center;justify-content:center}
+
+    /* circular path */
+    svg.path{width:90%;height:90%;position:absolute}
+    .space{position:absolute;width:var(--space-size);height:var(--space-size);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#111;border:4px solid #fff;box-shadow:0 6px 18px rgba(2,6,23,.25);transform:translate(-50%,-50%);transition:left .28s linear, top .28s linear}
+
+    /* player pieces */
+    .piece{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;border:3px solid #fff;box-shadow:0 6px 18px rgba(2,6,23,.35);position:absolute;transform:translate(-50%,-50%);transition:left .28s linear, top .28s linear}
+
+    .piece.p1{background:var(--p1)}.piece.p2{background:var(--p2)}.piece.p3{background:var(--p3)}.piece.p4{background:var(--p4)}
+
+    .controls{width:100%;display:flex;gap:12px;padding:16px;border-top:1px solid #f1f5f9;align-items:center;justify-content:space-between}
+    .dice-btn{width:86px;height:86px;border-radius:14px;border:none;background:#0f1724;color:white;font-size:2.2rem;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(2,6,23,.4);cursor:pointer}
+    .info{flex:1;text-align:center;color:var(--muted);font-weight:700}
+
+    .turn-indicator{display:flex;gap:8px;align-items:center}
+    .turn-dot{width:12px;height:12px;border-radius:50%}
+
+    /* mobile tweaks */
+    @media (max-width:420px){:root{--space-size:36px} .board{height:380px}}
+
+    /* modal promo */
+    .bottom-banner{background:linear-gradient(90deg,#0f1724 0%, rgba(15,23,36,0.8)100%);color:#fff;padding:12px 14px;display:flex;gap:12px;align-items:center;justify-content:space-between}
+    .download{background:linear-gradient(90deg,var(--p2),var(--p4));padding:10px 14px;border-radius:10px;color:white;font-weight:800;text-decoration:none}
+
+    .credits{font-size:12px;color:var(--muted);padding:8px 14px;text-align:center}
   </style>
 </head>
 <body>
-  <div id="game-container">
-    <div id="ui-overlay">
-      <div id="score-container">
-        <div id="score">💰 0</div>
+  <div class="card" role="application">
+    <header>
+      <h1>دمو — بازی شبیه لودو (نمایش)</h1>
+      <div class="promo">
+        <span style="color:var(--muted);font-size:.95rem">تبلیغ: اپلیکیشن Roznamcha</span>
+        <a href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" target="_blank" rel="noopener">دانلود اپ</a>
       </div>
-      <div id="distance-container">
-        <div id="distance">📏 100m</div>
+    </header>
+
+    <div class="board-wrap">
+      <div class="board" id="board" aria-hidden="false">
+        <svg class="path" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+          <!-- circular path visual only -->
+          <defs>
+            <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <circle cx="200" cy="200" r="135" stroke="#e6eef8" stroke-width="52" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+        </svg>
       </div>
-      <div id="chase-warning">DEBT COLLECTOR IS CLOSE!</div>
-      <div id="progress-bar">
-        <div id="progress-fill"></div>
+
+      <div class="controls">
+        <div class="turn-indicator" id="turnIndicator">
+          <div style="display:flex;flex-direction:column;align-items:flex-end">
+            <div style="font-weight:800">نوبت:</div>
+            <div id="currentPlayerLabel" style="font-weight:900;color:#0f1724">بازیکن 1</div>
+          </div>
+        </div>
+
+        <div class="info" id="info">برای شروع، تاس را بزنید.</div>
+
+        <button class="dice-btn" id="diceBtn" aria-label="تاس"><span id="diceFace">🎲</span></button>
       </div>
-      <div id="power-ups">
-        <div class="power-up" id="speed-boost">⚡</div>
-        <div class="power-up" id="shield">🛡️</div>
-      </div>
+
+      <div class="credits">قوانین ساده شده: هر بازیکن یک مهره دارد، کسی که یک دور کامل گردد برنده است. اگر روی مهرهٔ حریف فرود آیید، او به شروع بازمی‌گردد.</div>
     </div>
-    
-    <div id="mobile-controls">
-      <div id="left-pad" class="control-pad">
-        <div id="left-btn" class="control-button">←</div>
+
+    <div class="bottom-banner">
+      <div style="display:flex;flex-direction:column">
+        <strong>روزنامچه — حسابداری و مدیریت موجودی برای کسب‌وکارها</strong>
+        <span style="font-size:13px;color:#cbd5e1">می‌خواهید بازی در اپ شما نمایش داده شود؟ این نسخه نمایشی ساده برای جذب کاربران ساخته شده است.</span>
       </div>
-      <div id="right-pad" class="control-pad">
-        <div id="right-btn" class="control-button">→</div>
-      </div>
-    </div>
-    
-    <div id="start-screen">
-      <h1 class="title">CASH FLOW CHASE</h1>
-      <p class="subtitle">Run from the Debt Collector while collecting profit coins!<br>Stay ahead and build your business.</p>
-      <button class="btn" id="start-btn">START RUNNING</button>
-    </div>
-    
-    <div id="game-over">
-      <h2 class="title">CAUGHT BY DEBT COLLECTOR!</h2>
-      <p class="subtitle" id="final-score">You earned: $0</p>
-      <p class="subtitle">Can you outrun them next time?</p>
-      <button class="btn" id="restart-btn">TRY AGAIN</button>
-    </div>
-    
-    <div id="download-promo">
-      <a href="#" id="download-link">📱 Download our app for more financial challenges!</a>
+      <a class="download" href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" target="_blank" rel="noopener">دانلود اپ Roznamcha</a>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
   <script>
-    // Game variables
-    let score = 0;
-    let distance = 100;
-    let gameStarted = false;
-    let gameOver = false;
-    let gameSpeed = 0.2;
-    let chaseDistance = 100;
-    let chaseSpeed = 0.22;
-    let playerSpeed = 0.2;
-    let hasShield = false;
-    let hasSpeedBoost = false;
-    let speedBoostTime = 0;
-    
-    // UI elements
-    const startScreen = document.getElementById('start-screen');
-    const startBtn = document.getElementById('start-btn');
-    const gameOverScreen = document.getElementById('game-over');
-    const restartBtn = document.getElementById('restart-btn');
-    const finalScore = document.getElementById('final-score');
-    const scoreDisplay = document.getElementById('score');
-    const distanceDisplay = document.getElementById('distance');
-    const chaseWarning = document.getElementById('chase-warning');
-    const progressFill = document.getElementById('progress-fill');
-    const downloadLink = document.getElementById('download-link');
-    const speedBoostPowerUp = document.getElementById('speed-boost');
-    const shieldPowerUp = document.getElementById('shield');
-    
-    // Mobile controls
-    const leftBtn = document.getElementById('left-btn');
-    const rightBtn = document.getElementById('right-btn');
-    
-    // Initialize Three.js
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x071a33);
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    document.getElementById('game-container').appendChild(renderer.domElement);
-    
-    // Add stars to background
-    function addStars() {
-      const starGeometry = new THREE.BufferGeometry();
-      const starMaterial = new THREE.PointsMaterial({
-        color: 0xffffff,
-        size: 0.2,
-        sizeAttenuation: true
-      });
-      
-      const starVertices = [];
-      for (let i = 0; i < 2000; i++) {
-        const x = (Math.random() - 0.5) * 2000;
-        const y = (Math.random() - 0.5) * 2000;
-        const z = (Math.random() - 0.5) * 2000;
-        starVertices.push(x, y, z);
+    // Simple Ludo-like demo with 4 players (single piece each)
+    (function(){
+      const board = document.getElementById('board');
+      const diceBtn = document.getElementById('diceBtn');
+      const diceFace = document.getElementById('diceFace');
+      const info = document.getElementById('info');
+      const currentPlayerLabel = document.getElementById('currentPlayerLabel');
+
+      const center = {x: board.clientWidth/2, y: board.clientHeight/2};
+      // We'll compute positions relative to SVG viewBox (400x400)
+      const cx = 200, cy = 200, radius = 135;
+      const spaces = 20; // loop spaces
+      const players = [ {id:1,color:'p1'}, {id:2,color:'p2'}, {id:3,color:'p3'}, {id:4,color:'p4'} ];
+      const state = { pos: [ -1, -1, -1, -1 ], // -1 means at home
+                      finished: [false,false,false,false],
+                      cur: 0, rolling:false };
+
+      // create space markers (hidden small dots for positioning)
+      const spacePoints = [];
+      for(let i=0;i<spaces;i++){
+        const angle = (i / spaces) * Math.PI*2 - Math.PI/2; // start top
+        const x = cx + Math.cos(angle)*radius;
+        const y = cy + Math.sin(angle)*radius;
+        spacePoints.push({x,y});
+
+        // optional small visual for spaces
+        const dot = document.createElement('div');
+        dot.className = 'space';
+        dot.style.left = x + 'px';
+        dot.style.top = y + 'px';
+        dot.style.width = '12px'; dot.style.height='12px'; dot.style.borderRadius='50%'; dot.style.border='2px solid rgba(255,255,255,0.6)'; dot.style.background='rgba(255,255,255,0.02)';
+        board.appendChild(dot);
       }
-      
-      starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-      const stars = new THREE.Points(starGeometry, starMaterial);
-      scene.add(stars);
-    }
-    addStars();
-    
-    // Player (business character)
-    const playerGeometry = new THREE.CapsuleGeometry(0.7, 1.2, 4, 8);
-    const playerMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0x0077ff,
-      emissive: 0x0044aa,
-      emissiveIntensity: 0.3,
-      metalness: 0.7,
-      roughness: 0.3
-    });
-    const player = new THREE.Mesh(playerGeometry, playerMaterial);
-    player.rotation.x = Math.PI / 2;
-    player.position.y = 1.5;
-    scene.add(player);
-    
-    // Debt collector (chaser)
-    const chaserGeometry = new THREE.ConeGeometry(1, 3, 8);
-    const chaserMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0xff4444,
-      emissive: 0xaa0000,
-      emissiveIntensity: 0.5,
-      metalness: 0.5,
-      roughness: 0.3
-    });
-    const chaser = new THREE.Mesh(chaserGeometry, chaserMaterial);
-    chaser.rotation.x = Math.PI / 2;
-    chaser.position.y = 1.5;
-    chaser.position.z = -chaseDistance;
-    scene.add(chaser);
-    
-    // Create a glowing effect for the chaser
-    const chaserLight = new THREE.PointLight(0xff0000, 1, 20);
-    chaserLight.position.set(0, 2, 0);
-    chaser.add(chaserLight);
-    
-    // Floor with improved texture
-    const floorGeo = new THREE.PlaneGeometry(20, 1000);
-    const floorMat = new THREE.MeshStandardMaterial({ 
-      color: 0x222222,
-      metalness: 0.5,
-      roughness: 0.7
-    });
-    const floor = new THREE.Mesh(floorGeo, floorMat);
-    floor.rotation.x = -Math.PI / 2;
-    scene.add(floor);
-    
-    // Add grid to floor
-    const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
-    gridHelper.position.y = 0.01;
-    scene.add(gridHelper);
-    
-    // Lighting
-    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambient);
-    
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight.position.set(5, 10, 7);
-    scene.add(dirLight);
-    
-    // Add colored point lights for more visual interest
-    const pointLight1 = new THREE.PointLight(0x0077ff, 0.7, 30);
-    pointLight1.position.set(5, 5, 5);
-    scene.add(pointLight1);
-    
-    const pointLight2 = new THREE.PointLight(0xff4400, 0.7, 30);
-    pointLight2.position.set(-5, 3, -5);
-    scene.add(pointLight2);
-    
-    // Camera position
-    camera.position.set(0, 4, 7);
-    camera.lookAt(0, 0, 0);
-    
-    // Obstacles and coins
-    const obstacles = [];
-    const coins = [];
-    const powerUps = [];
-    
-    function spawnObstacle(zPos) {
-      const geo = new THREE.CylinderGeometry(1, 1, 2, 8);
-      const mat = new THREE.MeshStandardMaterial({ 
-        color: 0xff4444,
-        emissive: 0x440000,
-        emissiveIntensity: 0.3,
-        metalness: 0.4,
-        roughness: 0.5
+
+      // create pieces
+      const pieces = [];
+      players.forEach((p, idx)=>{
+        const el = document.createElement('div');
+        el.className = `piece ${p.color}`;
+        el.textContent = p.id;
+        // start off-board near corners
+        const startAngles = [ -40, 50, 140, -140];
+        const a = startAngles[idx]*Math.PI/180;
+        const sx = cx + Math.cos(a)*(radius+70);
+        const sy = cy + Math.sin(a)*(radius+70);
+        el.style.left = sx+'px'; el.style.top = sy+'px';
+        board.appendChild(el);
+        pieces.push(el);
       });
-      const obs = new THREE.Mesh(geo, mat);
-      obs.position.set((Math.random() > 0.5 ? -3 : 3), 1, zPos);
-      scene.add(obs);
-      obstacles.push(obs);
-    }
-    
-    function spawnCoin(zPos) {
-      const geo = new THREE.CylinderGeometry(0.8, 0.8, 0.2, 16);
-      const mat = new THREE.MeshStandardMaterial({ 
-        color: 0xffd700,
-        emissive: 0xaa9900,
-        emissiveIntensity: 0.5,
-        metalness: 0.8,
-        roughness: 0.2
-      });
-      const coin = new THREE.Mesh(geo, mat);
-      coin.position.set((Math.random() > 0.5 ? -3 : 3), 1.5, zPos);
-      coin.rotation.x = Math.PI / 2;
-      scene.add(coin);
-      coins.push(coin);
-      
-      // Add point light to coin
-      const coinLight = new THREE.PointLight(0xffd700, 0.5, 5);
-      coinLight.position.set(0, 0, 0);
-      coin.add(coinLight);
-    }
-    
-    function spawnPowerUp(zPos, type) {
-      const geo = new THREE.TetrahedronGeometry(1, 0);
-      const mat = new THREE.MeshStandardMaterial({ 
-        color: type === 'speed' ? 0x00ff00 : 0x00aaff,
-        emissive: type === 'speed' ? 0x004400 : 0x002266,
-        emissiveIntensity: 0.5,
-        metalness: 0.7,
-        roughness: 0.2
-      });
-      const powerUp = new THREE.Mesh(geo, mat);
-      powerUp.position.set((Math.random() > 0.5 ? -3 : 3), 1.5, zPos);
-      powerUp.userData = { type };
-      scene.add(powerUp);
-      powerUps.push(powerUp);
-      
-      // Add point light to power-up
-      const powerUpLight = new THREE.PointLight(type === 'speed' ? 0x00ff00 : 0x00aaff, 0.7, 8);
-      powerUpLight.position.set(0, 0, 0);
-      powerUp.add(powerUpLight);
-    }
-    
-    // Initialize objects
-    for (let i = -20; i > -200; i -= 8) {
-      const rand = Math.random();
-      if (rand < 0.4) spawnObstacle(i);
-      else if (rand < 0.8) spawnCoin(i);
-      else if (rand < 0.9) spawnPowerUp(i, 'speed');
-      else if (rand < 1.0) spawnPowerUp(i, 'shield');
-    }
-    
-    // Movement
-    let playerX = 0;
-    const laneOffset = 3;
-    let targetCameraPosition = new THREE.Vector3(0, 4, 7);
-    
-    function moveLeft() {
-      playerX = -laneOffset;
-      targetCameraPosition.x = -1;
-    }
-    
-    function moveRight() {
-      playerX = laneOffset;
-      targetCameraPosition.x = 1;
-    }
-    
-    function resetLane() {
-      playerX = 0;
-      targetCameraPosition.x = 0;
-    }
-    
-    // Keyboard controls
-    window.addEventListener("keydown", (e) => {
-      if (!gameStarted || gameOver) return;
-      
-      if (e.key === "ArrowLeft") moveLeft();
-      if (e.key === "ArrowRight") moveRight();
-    });
-    
-    window.addEventListener("keyup", (e) => {
-      if (!gameStarted || gameOver) return;
-      
-      if (e.key === "ArrowLeft" || e.key === "ArrowRight") resetLane();
-    });
-    
-    // Mobile button controls
-    leftBtn.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      if (!gameStarted || gameOver) return;
-      moveLeft();
-    });
-    
-    rightBtn.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      if (!gameStarted || gameOver) return;
-      moveRight();
-    });
-    
-    leftBtn.addEventListener("touchend", (e) => {
-      e.preventDefault();
-      if (!gameStarted || gameOver) return;
-      resetLane();
-    });
-    
-    rightBtn.addEventListener("touchend", (e) => {
-      e.preventDefault();
-      if (!gameStarted || gameOver) return;
-      resetLane();
-    });
-    
-    // Touch swipe controls
-    let touchStartX = null;
-    window.addEventListener("touchstart", (e) => {
-      if (!gameStarted || gameOver) return;
-      touchStartX = e.touches[0].clientX;
-    });
-    
-    window.addEventListener("touchmove", (e) => {
-      if (!gameStarted || gameOver || touchStartX === null) return;
-      e.preventDefault();
-    });
-    
-    window.addEventListener("touchend", (e) => {
-      if (!gameStarted || gameOver || touchStartX === null) return;
-      
-      const touchEndX = e.changedTouches[0].clientX;
-      const diff = touchEndX - touchStartX;
-      
-      if (diff > 50) moveRight();
-      else if (diff < -50) moveLeft();
-      else resetLane();
-      
-      touchStartX = null;
-    });
-    
-    // Start game button
-    startBtn.addEventListener("click", () => {
-      startScreen.style.display = "none";
-      gameStarted = true;
-      animate();
-    });
-    
-    // Restart game button
-    restartBtn.addEventListener("click", () => {
-      gameOverScreen.style.display = "none";
-      resetGame();
-      gameStarted = true;
-      gameOver = false;
-      animate();
-    });
-    
-    // Download link
-    downloadLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      alert("Thank you for your interest! Downloading our app...");
-    });
-    
-    // Create coin collection effect
-    function createCoinEffect(x, y) {
-      const effect = document.createElement('div');
-      effect.className = 'coin-effect';
-      effect.style.left = `${x}px`;
-      effect.style.top = `${y}px`;
-      document.getElementById('game-container').appendChild(effect);
-      
-      setTimeout(() => {
-        effect.remove();
-      }, 1000);
-    }
-    
-    // Reset game state
-    function resetGame() {
-      score = 0;
-      distance = 100;
-      gameSpeed = 0.2;
-      playerSpeed = 0.2;
-      chaseSpeed = 0.22;
-      chaseDistance = 100;
-      hasShield = false;
-      hasSpeedBoost = false;
-      speedBoostTime = 0;
-      scoreDisplay.textContent = `💰 ${score}`;
-      distanceDisplay.textContent = `📏 ${Math.round(distance)}m`;
-      playerX = 0;
-      player.position.x = 0;
-      chaser.position.z = -chaseDistance;
-      speedBoostPowerUp.classList.remove('active');
-      shieldPowerUp.classList.remove('active');
-      
-      // Reset obstacles and coins
-      obstacles.forEach(obs => {
-        obs.position.z = -200 + Math.random() * -50;
-        obs.position.x = (Math.random() > 0.5 ? -3 : 3);
-      });
-      
-      coins.forEach(coin => {
-        coin.position.z = -200 + Math.random() * -50;
-        coin.position.x = (Math.random() > 0.5 ? -3 : 3);
-      });
-      
-      powerUps.forEach(powerUp => {
-        powerUp.position.z = -200 + Math.random() * -50;
-        powerUp.position.x = (Math.random() > 0.5 ? -3 : 3);
-      });
-    }
-    
-    // Game animation loop
-    function animate() {
-      if (!gameStarted || gameOver) return;
-      
-      requestAnimationFrame(animate);
-      
-      // Smooth player movement
-      player.position.x += (playerX - player.position.x) * 0.2;
-      
-      // Smooth camera movement
-      camera.position.x += (targetCameraPosition.x - camera.position.x) * 0.1;
-      camera.position.y += (targetCameraPosition.y - camera.position.y) * 0.1;
-      camera.position.z += (targetCameraPosition.z - camera.position.z) * 0.1;
-      camera.lookAt(player.position.x, player.position.y, player.position.z - 5);
-      
-      // Rotate player for visual effect
-      player.rotation.z += (playerX - player.position.x) * 0.02;
-      
-      // Move floor objects
-      obstacles.forEach((obs) => {
-        obs.position.z += playerSpeed;
-        obs.rotation.y += 0.02;
-        
-        if (obs.position.z > 5) {
-          obs.position.z = -200;
-          obs.position.x = (Math.random() > 0.5 ? -3 : 3);
+
+      function placePieceOnSpace(playerIndex, spaceIndex){
+        // spaceIndex may be -1 (home)
+        if(spaceIndex<0){
+          // move to home cluster near corner
+          const startAngles = [ -40, 50, 140, -140];
+          const a = startAngles[playerIndex]*Math.PI/180;
+          const sx = cx + Math.cos(a)*(radius+70);
+          const sy = cy + Math.sin(a)*(radius+70);
+          pieces[playerIndex].style.left = sx+'px'; pieces[playerIndex].style.top = sy+'px';
+        } else {
+          const sp = spacePoints[spaceIndex % spaces];
+          pieces[playerIndex].style.left = sp.x+'px'; pieces[playerIndex].style.top = sp.y+'px';
         }
-        
-        // Collision detection
-        if (Math.abs(player.position.x - obs.position.x) < 1.5 &&
-            Math.abs(player.position.z - obs.position.z) < 1.5) {
-          if (hasShield) {
-            hasShield = false;
-            shieldPowerUp.classList.remove('active');
-            obs.position.z = -200;
+      }
+
+      function updateUI(){
+        currentPlayerLabel.textContent = 'بازیکن ' + (state.cur+1);
+      }
+
+      function nextTurn(){
+        // if someone already finished all loop (we'll treat finish when made a full loop)
+        let alive = false;
+        for(let i=0;i<4;i++){ if(!state.finished[i]) alive=true }
+        if(!alive){ info.textContent='بازی تمام شد.'; return; }
+
+        // move to next non-finished
+        do{ state.cur = (state.cur+1)%4; }while(state.finished[state.cur]);
+        updateUI();
+        state.rolling=false;
+      }
+
+      function rollDiceForCurrent(){
+        if(state.rolling) return;
+        state.rolling=true;
+        diceBtn.disabled = true;
+        diceFace.textContent='...';
+        // short rolling animation
+        const rollAnim = setInterval(()=>{ diceFace.textContent = Math.floor(Math.random()*6)+1; }, 80);
+        setTimeout(()=>{
+          clearInterval(rollAnim);
+          const val = Math.floor(Math.random()*6)+1;
+          diceFace.textContent = val;
+          info.textContent = 'شما ' + val + ' انداختید.';
+          movePiece(state.cur, val);
+        }, 700);
+      }
+
+      function movePiece(playerIndex, steps){
+        // if at home (-1), must roll 6 to enter
+        const curPos = state.pos[playerIndex];
+        if(curPos===-1){
+          if(steps===6){
+            state.pos[playerIndex]=0; // enter at space 0 + player offset
           } else {
-            endGame();
+            info.textContent = 'برای ورود به بازی باید 6 بیندازید.';
+            state.rolling=false; diceBtn.disabled=false; nextTurn(); return;
+          }
+        } else {
+          const next = curPos + steps;
+          // check finish condition: if next >= spaces -> finish
+          if(next >= spaces){
+            state.finished[playerIndex]=true;
+            state.pos[playerIndex]=spaces-1; // put on last space visually
+            placePieceOnSpace(playerIndex, state.pos[playerIndex]);
+            info.textContent = 'بازیکن ' + (playerIndex+1) + ' دور کامل زد و بیرون آمد — برنده!';
+            diceBtn.disabled=true; // pause
+            // highlight winner and stop game
+            pieces[playerIndex].style.transform = 'translate(-50%,-50%) scale(1.18)';
             return;
+          } else {
+            state.pos[playerIndex] = next;
           }
         }
-      });
-      
-      coins.forEach((coin) => {
-        coin.position.z += playerSpeed;
-        coin.rotation.y += 0.05;
-        
-        if (coin.position.z > 5) {
-          coin.position.z = -200;
-          coin.position.x = (Math.random() > 0.5 ? -3 : 3);
-        }
-        
-        if (Math.abs(player.position.x - coin.position.x) < 1.5 &&
-            Math.abs(player.position.z - coin.position.z) < 1.5) {
-          score += 10;
-          scoreDisplay.textContent = `💰 ${score}`;
-          coin.position.z = -200;
-          coin.position.x = (Math.random() > 0.5 ? -3 : 3);
-          
-          // Create visual effect
-          createCoinEffect(
-            window.innerWidth / 2 + (Math.random() - 0.5) * 100,
-            window.innerHeight / 2 + (Math.random() - 0.5) * 100
-          );
-          
-          // Slight speed increase when collecting coins
-          playerSpeed += 0.001;
-        }
-      });
-      
-      // Handle power-ups
-      powerUps.forEach((powerUp) => {
-        powerUp.position.z += playerSpeed;
-        powerUp.rotation.x += 0.05;
-        powerUp.rotation.y += 0.05;
-        
-        if (powerUp.position.z > 5) {
-          powerUp.position.z = -200;
-          powerUp.position.x = (Math.random() > 0.5 ? -3 : 3);
-        }
-        
-        if (Math.abs(player.position.x - powerUp.position.x) < 1.5 &&
-            Math.abs(player.position.z - powerUp.position.z) < 1.5) {
-          
-          if (powerUp.userData.type === 'speed') {
-            hasSpeedBoost = true;
-            speedBoostTime = 300; // 5 seconds at 60fps
-            speedBoostPowerUp.classList.add('active');
-            playerSpeed += 0.1;
-          } else if (powerUp.userData.type === 'shield') {
-            hasShield = true;
-            shieldPowerUp.classList.add('active');
+
+        // adjust position with player-specific starting offset so each player starts at different place on loop
+        const offset = playerIndex * Math.floor(spaces/4);
+        const effectivePos = (state.pos[playerIndex] + offset) % spaces;
+        placePieceOnSpace(playerIndex, effectivePos);
+
+        // if landed on opponent, send them home
+        for(let i=0;i<4;i++){
+          if(i===playerIndex) continue;
+          if(state.pos[i]>=0){
+            const off = (state.pos[i] + i*Math.floor(spaces/4))%spaces;
+            if(off === effectivePos){
+              state.pos[i] = -1; // send home
+              placePieceOnSpace(i, -1);
+              info.textContent += ` و مهرهٔ بازیکن ${i+1} برگردانده شد.`;
+            }
           }
-          
-          powerUp.position.z = -200;
-          powerUp.position.x = (Math.random() > 0.5 ? -3 : 3);
+        }
+
+        // after moving, unlock next player's turn
+        state.rolling=false;
+        diceBtn.disabled=false;
+        // simple rule: if rolled 6 they get another turn
+        if(steps!==6) nextTurn(); else { info.textContent += ' (6 زد — یک نوبت دیگر)'; }
+      }
+
+      // AI: when it's not player 0 (human), auto-roll after short delay
+      function autoPlayIfNeeded(){
+        if(state.cur===0 || state.finished[state.cur]) return; // human is player 0
+        setTimeout(()=>{
+          // simulate click
+          rollDiceForCurrent();
+        }, 700 + Math.random()*700);
+      }
+
+      // attach click
+      diceBtn.addEventListener('click', ()=>{
+        if(state.cur!==0) return; // only allow human when their turn
+        rollDiceForCurrent();
+      });
+
+      // initialize UI positions
+      for(let i=0;i<4;i++){ placePieceOnSpace(i, -1); }
+      updateUI();
+
+      // game loop watcher for AI turns
+      const watcher = setInterval(()=>{
+        if(!state.rolling && state.cur!==0 && !state.finished[state.cur]){
+          autoPlayIfNeeded();
+        }
+      },300);
+
+      // handle window resize to reposition pieces using computed board size
+      window.addEventListener('resize', ()=>{
+        // recompute center and points based on current element size
+        const rect = board.getBoundingClientRect();
+        const scale = rect.width/400; // we designed on 400 viewBox
+        // recompute using bounding box
+        const newCx = rect.width/2; const newCy = rect.height/2; const newR = Math.min(rect.width,rect.height)/2 - 80;
+        // rebuild points
+        for(let i=0;i<spaces;i++){
+          const angle = (i / spaces) * Math.PI*2 - Math.PI/2;
+          const x = newCx + Math.cos(angle)*newR;
+          const y = newCy + Math.sin(angle)*newR;
+          spacePoints[i].x = x; spacePoints[i].y = y;
+        }
+        // reposition pieces
+        for(let i=0;i<4;i++){
+          const p = state.pos[i];
+          if(p<0) placePieceOnSpace(i,-1); else placePieceOnSpace(i, (p + i*Math.floor(spaces/4))%spaces);
         }
       });
-      
-      // Handle speed boost timer
-      if (hasSpeedBoost) {
-        speedBoostTime--;
-        if (speedBoostTime <= 0) {
-          hasSpeedBoost = false;
-          playerSpeed -= 0.1;
-          speedBoostPowerUp.classList.remove('active');
-        }
-      }
-      
-      // Move chaser
-      chaser.position.z += chaseSpeed;
-      chaser.rotation.y += 0.03;
-      
-      // Calculate distance between player and chaser
-      chaseDistance = player.position.z - chaser.position.z;
-      distanceDisplay.textContent = `📏 ${Math.round(chaseDistance)}m`;
-      
-      // Update progress bar
-      const progress = 1 - (chaseDistance / 100);
-      progressFill.style.transform = `scaleX(${progress})`;
-      
-      // Show warning if chaser is close
-      if (chaseDistance < 20) {
-        chaseWarning.style.opacity = "1";
-      } else {
-        chaseWarning.style.opacity = "0";
-      }
-      
-      // Increase chaser speed over time
-      chaseSpeed += 0.00005;
-      
-      // Check if chaser caught player
-      if (chaseDistance < 2) {
-        endGame();
-        return;
-      }
-      
-      renderer.render(scene, camera);
-    }
-    
-    function endGame() {
-      gameOver = true;
-      finalScore.textContent = `You earned: $${score}`;
-      gameOverScreen.style.display = "flex";
-    }
-    
-    // Initial render
-    renderer.render(scene, camera);
-    
-    // Resize handler
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-    
-    // Prevent zoom on double-tap
-    let lastTap = 0;
-    document.addEventListener('touchend', function(e) {
-      const currentTime = new Date().getTime();
-      const tapLength = currentTime - lastTap;
-      if (tapLength < 300 && tapLength > 0) {
-        e.preventDefault();
-      }
-      lastTap = currentTime;
-    });
+
+      // initial resize trigger
+      setTimeout(()=>{ window.dispatchEvent(new Event('resize')); },100);
+    })();
   </script>
 </body>
 </html>
