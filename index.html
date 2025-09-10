@@ -2,113 +2,219 @@
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
-<title>🎲 بازی روزنامچه - دکانت را مدیریت کن</title>
+<title>🏃‍♂️ روزنامچه رانر</title>
 <style>
   body {
+    margin: 0;
+    padding: 0;
+    background: #fdfdfd;
     font-family: Tahoma, sans-serif;
     text-align: center;
-    background: #fefefe;
-    margin: 0; padding: 0;
+    overflow: hidden;
   }
   h1 { margin: 10px; font-size: 20px; }
-  #board { margin: 20px auto; display: grid; grid-template-columns: repeat(5, 60px); gap: 5px; }
-  .cell {
-    width: 60px; height: 60px;
-    display: flex; align-items: center; justify-content: center;
-    border: 1px solid #ddd; border-radius: 10px;
-    font-size: 14px; position: relative;
+  #game {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background: linear-gradient(to top, #f4f4f4, #eaeaea);
+    border-top: 4px solid #333;
+    overflow: hidden;
   }
-  .event { background: #ffeeba; }
-  .finish { background: #c3e6cb; font-weight: bold; }
   .player {
-    width: 22px; height: 22px; border-radius: 50%;
+    position: absolute;
+    bottom: 20px;
+    left: 40px;
+    width: 40px;
+    height: 40px;
+    background: blue;
+    border-radius: 8px;
   }
-  .p1 { background: blue; }
-  .p2 { background: red; }
-  button {
-    padding: 14px 26px; font-size: 20px; margin-top: 15px; cursor: pointer;
-    background: #007bff; color: #fff; border: none; border-radius: 12px;
+  .item {
+    position: absolute;
+    bottom: 20px;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
   }
-  #message { margin-top: 15px; font-size: 16px; }
-  .final-screen { display:none; margin-top:30px; }
+  .coin { background: gold; }
+  .obstacle { background: crimson; border-radius: 6px; }
+  .boost { background: limegreen; border: 3px solid white; }
+  #score {
+    font-size: 18px;
+    margin: 8px;
+  }
+  #final-screen {
+    display:none;
+    margin-top:20px;
+  }
   .download-button {
-    display:inline-block; padding:14px 28px; background:#28a745; color:#fff;
-    text-decoration:none; border-radius:12px; font-weight:bold; font-size:18px;
+    display:inline-block;
+    padding:14px 28px;
+    background:#28a745;
+    color:#fff;
+    text-decoration:none;
+    border-radius:12px;
+    font-weight:bold;
+    font-size:18px;
+  }
+  button {
+    padding:12px 20px;
+    font-size:18px;
+    margin: 10px;
+    border:none;
+    background:#007bff;
+    color:#fff;
+    border-radius:10px;
+    cursor:pointer;
   }
 </style>
 </head>
 <body>
-  <h1>🎲 بازی روزنامچه</h1>
-  <p>تا رسیدن به <b>مفاد</b> بازی کن!</p>
-  <div id="board"></div>
-  <button id="roll-btn">🎲 پرتاب تاس</button>
-  <p id="message">نوبت بازیکن 1 است</p>
+  <h1>🏃‍♂️ روزنامچه رانر - سود جمع کن، ضرر فرار بده!</h1>
+  <p id="score">امتیاز: 0</p>
+  <div id="game">
+    <div class="player" id="player"></div>
+  </div>
+  <button id="startBtn">شروع بازی</button>
 
-  <!-- Win Screen -->
-  <div class="final-screen" id="final-screen">
-    <h2>تبریک 🎉</h2>
-    <p>شما دکان خود را مدیریت کردید!  
-    همین حالا <b>روزنامچه</b> را دانلود کنید و در زندگی واقعی هم برنده باشید.</p>
+  <!-- Final Screen -->
+  <div id="final-screen">
+    <h2>🎉 تبریک!</h2>
+    <p>شما دکان خود را مدیریت کردید و به سود رسیدید.  
+    در دنیای واقعی هم با <b>روزنامچه</b> همیشه برنده باشید!</p>
     <a href="https://mld10sar.github.io/Esmat/app-release.apk" class="download-button" download>📥 دانلود نسخه کامل</a>
   </div>
 
 <script>
-const board = document.getElementById("board");
-const rollBtn = document.getElementById("roll-btn");
-const msg = document.getElementById("message");
+const game = document.getElementById("game");
+const player = document.getElementById("player");
+const scoreDisplay = document.getElementById("score");
+const startBtn = document.getElementById("startBtn");
 const finalScreen = document.getElementById("final-screen");
 
-let size = 10; // 10 steps only
-let cells = [];
-let playerPos = [0, 0]; // p1, p2
-let turn = 0; // 0 = p1, 1 = p2
+let score = 0;
+let gameInterval, itemInterval;
+let isJumping = false;
+let isInvincible = false;
+let gameRunning = false;
 
-// Create board
-for (let i=0; i<size; i++) {
-  const cell = document.createElement("div");
-  cell.classList.add("cell");
-  if (i === size-1) cell.classList.add("finish");
-  if ([2,5,7].includes(i)) cell.classList.add("event");
-  board.appendChild(cell);
-  cells.push(cell);
+function startGame() {
+  score = 0;
+  scoreDisplay.innerText = "امتیاز: 0";
+  finalScreen.style.display = "none";
+  startBtn.style.display = "none";
+  gameRunning = true;
+
+  // Clear existing items
+  document.querySelectorAll(".item").forEach(el => el.remove());
+
+  gameInterval = setInterval(updateGame, 20);
+  itemInterval = setInterval(spawnItem, 1500);
+
+  document.addEventListener("keydown", jump);
+  document.addEventListener("click", jump);
 }
 
-function render() {
-  cells.forEach(c => c.innerHTML = "");
-  for (let p=0; p<2; p++) {
-    const piece = document.createElement("div");
-    piece.classList.add("player", p===0?"p1":"p2");
-    cells[playerPos[p]].appendChild(piece);
-  }
+function endGame() {
+  clearInterval(gameInterval);
+  clearInterval(itemInterval);
+  document.removeEventListener("keydown", jump);
+  document.removeEventListener("click", jump);
+  gameRunning = false;
+  startBtn.style.display = "inline-block";
+  game.style.display = "none";
+  finalScreen.style.display = "block";
 }
 
-function handleEvent(pos) {
-  if (pos===2) { msg.innerHTML="🚫 اجناس خلاص شد! 1 خانه عقب."; playerPos[turn]=Math.max(0,playerPos[turn]-1);}
-  if (pos===5) { msg.innerHTML="💸 دزدی شد! 2 خانه عقب."; playerPos[turn]=Math.max(0,playerPos[turn]-2);}
-  if (pos===7){ msg.innerHTML="⚡ روزنامچه استفاده شد → جلو رفتید!"; playerPos[turn]=Math.min(size-1,playerPos[turn]+2);}
+function jump(e) {
+  if (isJumping || !gameRunning) return;
+  isJumping = true;
+  let pos = 20;
+  const up = setInterval(() => {
+    if (pos >= 120) {
+      clearInterval(up);
+      const down = setInterval(() => {
+        if (pos <= 20) {
+          clearInterval(down);
+          isJumping = false;
+        }
+        pos -= 5;
+        player.style.bottom = pos + "px";
+      }, 20);
+    }
+    pos += 5;
+    player.style.bottom = pos + "px";
+  }, 20);
 }
 
-rollBtn.addEventListener("click", () => {
-  let dice = Math.floor(Math.random()*6)+1;
-  msg.innerHTML=`بازیکن ${turn+1} تاس انداخت: ${dice}`;
-  playerPos[turn] = Math.min(size-1, playerPos[turn]+dice);
-  
-  handleEvent(playerPos[turn]);
-  render();
-  
-  if (playerPos[turn]===size-1) {
-    document.getElementById("board").style.display="none";
-    rollBtn.style.display="none";
-    msg.style.display="none";
-    finalScreen.style.display="block";
-    return;
-  }
-  
-  turn = 1-turn; // switch turn
-  setTimeout(()=>{msg.innerHTML=`نوبت بازیکن ${turn+1} است`;},1000);
+function spawnItem() {
+  if (!gameRunning) return;
+  const item = document.createElement("div");
+  item.classList.add("item");
+
+  // Random type
+  const types = ["coin","obstacle","boost"];
+  let type = types[Math.floor(Math.random()*types.length)];
+  item.classList.add(type);
+
+  let yPos = 20;
+  if (type==="coin" || type==="boost") yPos = Math.random()>0.5?20:120;
+  item.style.bottom = yPos+"px";
+  item.style.right = "0px";
+  game.appendChild(item);
+}
+
+function updateGame() {
+  let items = document.querySelectorAll(".item");
+  items.forEach(item => {
+    let right = parseInt(item.style.right);
+    if (isNaN(right)) right=0;
+    item.style.right = (right+5) + "px";
+
+    if (parseInt(item.style.right) > window.innerWidth) {
+      item.remove();
+      return;
+    }
+
+    // Collision detection
+    let playerRect = player.getBoundingClientRect();
+    let itemRect = item.getBoundingClientRect();
+
+    if (!(playerRect.right < itemRect.left ||
+          playerRect.left > itemRect.right ||
+          playerRect.bottom < itemRect.top ||
+          playerRect.top > itemRect.bottom)) {
+      
+      if (item.classList.contains("coin")) {
+        score++;
+        scoreDisplay.innerText = "امتیاز: " + score;
+        item.remove();
+      }
+      else if (item.classList.contains("boost")) {
+        isInvincible = true;
+        player.style.background = "limegreen";
+        item.remove();
+        setTimeout(()=>{
+          isInvincible = false;
+          player.style.background = "blue";
+        },5000);
+      }
+      else if (item.classList.contains("obstacle")) {
+        if (!isInvincible) {
+          endGame();
+        } else {
+          item.remove();
+        }
+      }
+    }
+  });
+}
+
+startBtn.addEventListener("click", () => {
+  game.style.display = "block";
+  startGame();
 });
-
-render();
 </script>
 </body>
 </html>
