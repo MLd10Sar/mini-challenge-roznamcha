@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ps">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Cash Flow Runner 3D</title>
+  <title>د پیسو جریان تعقیب | Cash Flow Chase</title>
   <style>
     * {
       margin: 0;
@@ -16,8 +16,8 @@
     body {
       margin: 0;
       overflow: hidden;
-      background: #111;
-      font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+      background: linear-gradient(to bottom, #0a0a2a, #1a1a4a);
+      font-family: 'Arial', 'Nassim', 'Arial Rounded MT Bold', sans-serif;
       color: white;
     }
     
@@ -27,29 +27,48 @@
       height: 100vh;
     }
     
-    #info {
+    #ui-overlay {
       position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 20px;
-      color: #fff;
-      z-index: 10;
-      text-align: center;
-      padding: 8px 16px;
-      background: rgba(0,0,0,0.6);
-      border-radius: 12px;
-      backdrop-filter: blur(5px);
-      border: 1px solid rgba(255,255,255,0.1);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-      transition: all 0.3s ease;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
     }
     
-    #score-display {
+    #score-container {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px 20px;
+      border-radius: 20px;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    #score {
       font-size: 24px;
       font-weight: bold;
       color: #ffd700;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+    
+    #distance-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px 20px;
+      border-radius: 20px;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    #distance {
+      font-size: 24px;
+      font-weight: bold;
+      color: #ff5555;
     }
     
     #mobile-controls {
@@ -57,40 +76,46 @@
       bottom: 30px;
       width: 100%;
       display: flex;
-      justify-content: center;
-      gap: 40px;
-      z-index: 10;
-      padding: 0 20px;
+      justify-content: space-between;
+      padding: 0 30px;
+      pointer-events: auto;
     }
     
-    .control-btn {
-      width: 70px;
-      height: 70px;
+    .control-pad {
+      width: 120px;
+      height: 120px;
       border-radius: 50%;
-      background: rgba(0, 119, 255, 0.7);
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(5px);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .control-button {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
       display: flex;
       justify-content: center;
       align-items: center;
       font-size: 24px;
       color: white;
-      user-select: none;
-      backdrop-filter: blur(5px);
-      border: 2px solid rgba(255,255,255,0.2);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
       transition: all 0.1s ease;
     }
     
-    .control-btn:active {
-      transform: scale(0.9);
-      background: rgba(0, 119, 255, 1);
+    #left-pad {
+      flex-direction: row;
+      gap: 10px;
+      display: flex;
     }
     
-    #center-btn {
-      background: rgba(255, 215, 0, 0.7);
-    }
-    
-    #center-btn:active {
-      background: rgba(255, 215, 0, 1);
+    #right-pad {
+      flex-direction: row;
+      gap: 10px;
+      display: flex;
     }
     
     #start-screen, #game-over {
@@ -104,34 +129,31 @@
       justify-content: center;
       align-items: center;
       background: rgba(0, 0, 0, 0.85);
-      z-index: 20;
+      z-index: 200;
       backdrop-filter: blur(10px);
+      text-align: center;
     }
     
     #game-over {
       display: none;
     }
     
-    h1 {
+    .title {
       font-size: 42px;
       margin-bottom: 20px;
-      color: #ffd700;
-      text-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+      background: linear-gradient(to right, #ffd700, #ffaa00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
     }
     
-    h2 {
-      font-size: 32px;
-      margin-bottom: 30px;
-      color: #ffd700;
-      text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-    }
-    
-    p {
-      font-size: 18px;
+    .subtitle {
+      font-size: 22px;
       margin-bottom: 30px;
       text-align: center;
       max-width: 80%;
       line-height: 1.5;
+      color: #aaaaaa;
     }
     
     .btn {
@@ -145,84 +167,134 @@
       margin-top: 20px;
       box-shadow: 0 4px 15px rgba(0, 119, 255, 0.4);
       transition: all 0.3s ease;
+      pointer-events: auto;
     }
     
     .btn:active {
       transform: scale(0.95);
-      box-shadow: 0 2px 8px rgba(0, 119, 255, 0.4);
     }
     
-    #particles-container {
+    #chase-warning {
       position: absolute;
+      bottom: 180px;
       width: 100%;
-      height: 100%;
-      z-index: 5;
+      text-align: center;
+      font-size: 24px;
+      color: #ff5555;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(255, 85, 85, 0.7);
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
     
-    .particle {
+    #progress-bar {
       position: absolute;
-      background: rgba(255, 215, 0, 0.6);
-      border-radius: 50%;
-      pointer-events: none;
+      bottom: 150px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      overflow: hidden;
     }
     
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: 1; }
-      100% { transform: scale(2); opacity: 0; }
-    }
-    
-    .pulse {
-      animation: pulse 0.5s ease-out;
+    #progress-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(to right, #ff5555, #ffd700);
+      transform-origin: left center;
+      transform: scaleX(0);
     }
     
     #download-promo {
       position: absolute;
-      bottom: 120px;
+      bottom: 30px;
       width: 100%;
       text-align: center;
       font-size: 16px;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 10px;
-      backdrop-filter: blur(5px);
-      z-index: 10;
+      padding: 15px;
+      background: linear-gradient(to right, rgba(0, 119, 255, 0.7), rgba(0, 85, 204, 0.7));
+      z-index: 150;
+      pointer-events: auto;
     }
     
     #download-promo a {
-      color: #00ccff;
+      color: white;
       text-decoration: none;
       font-weight: bold;
+    }
+    
+    #language-selector {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 300;
+    }
+    
+    .lang-btn {
+      padding: 8px 15px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      color: white;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+    }
+    
+    .lang-btn.active {
+      background: rgba(0, 119, 255, 0.7);
     }
   </style>
 </head>
 <body>
   <div id="game-container">
-    <div id="info">
-      <div id="score-display">💰 Score: 0</div>
+    <div id="ui-overlay">
+      <div id="score-container">
+        <div id="score">💰 0</div>
+      </div>
+      <div id="distance-container">
+        <div id="distance">📏 100m</div>
+      </div>
+      <div id="chase-warning">د قرض راټولونکی نږدی دی!</div>
+      <div id="progress-bar">
+        <div id="progress-fill"></div>
+      </div>
     </div>
-    
-    <div id="particles-container"></div>
     
     <div id="mobile-controls">
-      <div class="control-btn" id="left-btn">←</div>
-      <div class="control-btn" id="center-btn">↑</div>
-      <div class="control-btn" id="right-btn">→</div>
+      <div id="left-pad" class="control-pad">
+        <div id="left-btn" class="control-button">←</div>
+      </div>
+      <div id="right-pad" class="control-pad">
+        <div id="right-btn" class="control-button">→</div>
+      </div>
     </div>
     
-    <div id="download-promo">
-      Enjoying the game? <a href="#" id="download-link">Download our app for more exciting challenges!</a>
+    <div id="language-selector">
+      <button class="lang-btn active" id="pashto-btn">پښتو</button>
+      <button class="lang-btn" id="dari-btn">دری</button>
+      <button class="lang-btn" id="english-btn">English</button>
     </div>
     
     <div id="start-screen">
-      <h1>Cash Flow Runner 3D</h1>
-      <p>Collect golden coins to grow your business and avoid red debt blocks!<br>Swipe or use arrow keys to move.</p>
-      <button class="btn" id="start-btn">Start Game</button>
+      <h1 class="title">د پیسو جریان تعقیب</h1>
+      <p class="subtitle">د قرض راټولونکی څخه تښتئ او د سود سکې راټولوئ!<br>مخکې ولاړ شه او خپل سوداګرې وده کړه.</p>
+      <button class="btn" id="start-btn">پیل بازی</button>
     </div>
     
     <div id="game-over">
-      <h2>Game Over</h2>
-      <p id="final-score">Your score: 0</p>
-      <p>Ready to improve your financial skills?</p>
-      <button class="btn" id="restart-btn">Play Again</button>
+      <h2 class="title">د قرض راټولونکی نیولی!</h2>
+      <p class="subtitle" id="final-score">ستاسې عاید: ۰</p>
+      <p class="subtitle">آیا کولی شئ بل ځل وځنډوئ؟</p>
+      <button class="btn" id="restart-btn">بیا هڅه</button>
+    </div>
+    
+    <div id="download-promo">
+      <a href="#" id="download-link">📱 زموږ اپلیکیشن د نورو مالیي ستونزو لپاره ډاونلوډ کړئ!</a>
     </div>
   </div>
 
@@ -230,27 +302,86 @@
   <script>
     // Game variables
     let score = 0;
+    let distance = 100;
     let gameStarted = false;
     let gameOver = false;
+    let gameSpeed = 0.2;
+    let chaseDistance = 100;
+    let chaseSpeed = 0.22;
+    let currentLanguage = 'pashto';
     
-    // Start screen elements
+    // Language texts
+    const languageTexts = {
+      pashto: {
+        title: "د پیسو جریان تعقیب",
+        subtitle: "د قرض راټولونکی څخه تښتئ او د سود سکې راټولوئ!<br>مخکې ولاړ شه او خپل سوداګرې وده کړه.",
+        startBtn: "پیل بازی",
+        gameOverTitle: "د قرض راټولونکی نیولی!",
+        finalScore: "ستاسې عاید: ",
+        tryAgain: "آیا کولی شئ بل ځل وځنډوئ؟",
+        restartBtn: "بیا هڅه",
+        downloadText: "📱 زموږ اپلیکیشن د نورو مالیي ستونزو لپاره ډاونلوډ کړئ!",
+        warning: "د قرض راټولونکی نږدی دی!",
+        score: "💰 ",
+        distance: "📏 "
+      },
+      dari: {
+        title: "تعقیب جریان پول",
+        subtitle: "از جمع‌آورنده بدهی فرار کنید و سکه‌های سود جمع کنید!<br>جلو بروید و تجارت خود را رشد دهید.",
+        startBtn: "شروع بازی",
+        gameOverTitle: "جمع‌آورنده بدهی گرفتار شد!",
+        finalScore: "درآمد شما: ",
+        tryAgain: "آیا می‌توانید دفعه بعد فرار کنید؟",
+        restartBtn: "دوباره تلاش کنید",
+        downloadText: "📱 برنامه ما را برای چالش‌های مالی بیشتر دانلود کنید!",
+        warning: "جمع‌آورنده بدهی نزدیک است!",
+        score: "💰 ",
+        distance: "📏 "
+      },
+      english: {
+        title: "Cash Flow Chase",
+        subtitle: "Escape from the Debt Collector and collect profit coins!<br>Move forward and grow your business.",
+        startBtn: "Start Game",
+        gameOverTitle: "Caught by Debt Collector!",
+        finalScore: "Your earnings: ",
+        tryAgain: "Can you escape next time?",
+        restartBtn: "Try Again",
+        downloadText: "📱 Download our app for more financial challenges!",
+        warning: "Debt Collector is close!",
+        score: "💰 ",
+        distance: "📏 "
+      }
+    };
+    
+    // UI elements
     const startScreen = document.getElementById('start-screen');
     const startBtn = document.getElementById('start-btn');
     const gameOverScreen = document.getElementById('game-over');
     const restartBtn = document.getElementById('restart-btn');
     const finalScore = document.getElementById('final-score');
-    const scoreDisplay = document.getElementById('score-display');
+    const scoreDisplay = document.getElementById('score');
+    const distanceDisplay = document.getElementById('distance');
+    const chaseWarning = document.getElementById('chase-warning');
+    const progressFill = document.getElementById('progress-fill');
     const downloadLink = document.getElementById('download-link');
+    const titleElement = document.querySelector('#start-screen .title');
+    const subtitleElement = document.querySelector('#start-screen .subtitle');
+    const gameOverTitle = document.querySelector('#game-over .title');
+    const tryAgainElement = document.querySelector('#game-over .subtitle:nth-child(3)');
+    
+    // Language buttons
+    const pashtoBtn = document.getElementById('pashto-btn');
+    const dariBtn = document.getElementById('dari-btn');
+    const englishBtn = document.getElementById('english-btn');
     
     // Mobile controls
     const leftBtn = document.getElementById('left-btn');
-    const centerBtn = document.getElementById('center-btn');
     const rightBtn = document.getElementById('right-btn');
     
     // Initialize Three.js
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x071a33);
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -261,15 +392,15 @@
       const starGeometry = new THREE.BufferGeometry();
       const starMaterial = new THREE.PointsMaterial({
         color: 0xffffff,
-        size: 0.1,
+        size: 0.2,
         sizeAttenuation: true
       });
       
       const starVertices = [];
-      for (let i = 0; i < 1000; i++) {
-        const x = (Math.random() - 0.5) * 1000;
-        const y = (Math.random() - 0.5) * 1000;
-        const z = (Math.random() - 0.5) * 1000;
+      for (let i = 0; i < 2000; i++) {
+        const x = (Math.random() - 0.5) * 2000;
+        const y = (Math.random() - 0.5) * 2000;
+        const z = (Math.random() - 0.5) * 2000;
         starVertices.push(x, y, z);
       }
       
@@ -279,25 +410,46 @@
     }
     addStars();
     
-    // Player (shopkeeper)
-    const playerGeometry = new THREE.CapsuleGeometry(0.7, 1, 4, 8);
+    // Player (business character)
+    const playerGeometry = new THREE.CapsuleGeometry(0.7, 1.2, 4, 8);
     const playerMaterial = new THREE.MeshStandardMaterial({ 
       color: 0x0077ff,
       emissive: 0x0044aa,
-      emissiveIntensity: 0.2,
-      metalness: 0.5,
-      roughness: 0.2
+      emissiveIntensity: 0.3,
+      metalness: 0.7,
+      roughness: 0.3
     });
     const player = new THREE.Mesh(playerGeometry, playerMaterial);
     player.rotation.x = Math.PI / 2;
+    player.position.y = 1.5;
     scene.add(player);
+    
+    // Debt collector (chaser)
+    const chaserGeometry = new THREE.ConeGeometry(1, 3, 8);
+    const chaserMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0xff4444,
+      emissive: 0xaa0000,
+      emissiveIntensity: 0.5,
+      metalness: 0.5,
+      roughness: 0.3
+    });
+    const chaser = new THREE.Mesh(chaserGeometry, chaserMaterial);
+    chaser.rotation.x = Math.PI / 2;
+    chaser.position.y = 1.5;
+    chaser.position.z = -chaseDistance;
+    scene.add(chaser);
+    
+    // Create a glowing effect for the chaser
+    const chaserLight = new THREE.PointLight(0xff0000, 1, 20);
+    chaserLight.position.set(0, 2, 0);
+    chaser.add(chaserLight);
     
     // Floor with improved texture
     const floorGeo = new THREE.PlaneGeometry(20, 1000);
     const floorMat = new THREE.MeshStandardMaterial({ 
       color: 0x222222,
-      metalness: 0.3,
-      roughness: 0.8
+      metalness: 0.5,
+      roughness: 0.7
     });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
@@ -309,7 +461,7 @@
     scene.add(gridHelper);
     
     // Lighting
-    const ambient = new THREE.AmbientLight(0xffffff, 0.5);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambient);
     
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -317,17 +469,16 @@
     scene.add(dirLight);
     
     // Add colored point lights for more visual interest
-    const pointLight1 = new THREE.PointLight(0x0077ff, 0.5, 20);
+    const pointLight1 = new THREE.PointLight(0x0077ff, 0.7, 30);
     pointLight1.position.set(5, 5, 5);
     scene.add(pointLight1);
     
-    const pointLight2 = new THREE.PointLight(0xff4400, 0.5, 20);
+    const pointLight2 = new THREE.PointLight(0xff4400, 0.7, 30);
     pointLight2.position.set(-5, 3, -5);
     scene.add(pointLight2);
     
     // Camera position
-    camera.position.z = 5;
-    camera.position.y = 3;
+    camera.position.set(0, 4, 7);
     camera.lookAt(0, 0, 0);
     
     // Obstacles and coins
@@ -335,17 +486,16 @@
     const coins = [];
     
     function spawnObstacle(zPos) {
-      const geo = new THREE.ConeGeometry(1, 2, 8);
+      const geo = new THREE.CylinderGeometry(1, 1, 2, 8);
       const mat = new THREE.MeshStandardMaterial({ 
         color: 0xff4444,
         emissive: 0x440000,
-        emissiveIntensity: 0.2,
-        metalness: 0.3,
-        roughness: 0.4
+        emissiveIntensity: 0.3,
+        metalness: 0.4,
+        roughness: 0.5
       });
       const obs = new THREE.Mesh(geo, mat);
       obs.position.set((Math.random() > 0.5 ? -3 : 3), 1, zPos);
-      obs.rotation.x = Math.PI / 2;
       scene.add(obs);
       obstacles.push(obs);
     }
@@ -355,15 +505,20 @@
       const mat = new THREE.MeshStandardMaterial({ 
         color: 0xffd700,
         emissive: 0xaa9900,
-        emissiveIntensity: 0.3,
-        metalness: 0.7,
+        emissiveIntensity: 0.5,
+        metalness: 0.8,
         roughness: 0.2
       });
       const coin = new THREE.Mesh(geo, mat);
-      coin.position.set((Math.random() > 0.5 ? -3 : 3), 1, zPos);
+      coin.position.set((Math.random() > 0.5 ? -3 : 3), 1.5, zPos);
       coin.rotation.x = Math.PI / 2;
       scene.add(coin);
       coins.push(coin);
+      
+      // Add point light to coin
+      const coinLight = new THREE.PointLight(0xffd700, 0.5, 5);
+      coinLight.position.set(0, 0, 0);
+      coin.add(coinLight);
     }
     
     // Initialize objects
@@ -375,17 +530,21 @@
     // Movement
     let playerX = 0;
     const laneOffset = 3;
+    let targetCameraPosition = new THREE.Vector3(0, 4, 7);
     
     function moveLeft() {
       playerX = -laneOffset;
+      targetCameraPosition.x = -1;
     }
     
     function moveRight() {
       playerX = laneOffset;
+      targetCameraPosition.x = 1;
     }
     
     function resetLane() {
       playerX = 0;
+      targetCameraPosition.x = 0;
     }
     
     // Keyboard controls
@@ -394,7 +553,12 @@
       
       if (e.key === "ArrowLeft") moveLeft();
       if (e.key === "ArrowRight") moveRight();
-      if (e.key === "ArrowUp") resetLane();
+    });
+    
+    window.addEventListener("keyup", (e) => {
+      if (!gameStarted || gameOver) return;
+      
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") resetLane();
     });
     
     // Mobile button controls
@@ -410,36 +574,68 @@
       moveRight();
     });
     
-    centerBtn.addEventListener("touchstart", (e) => {
+    leftBtn.addEventListener("touchend", (e) => {
       e.preventDefault();
       if (!gameStarted || gameOver) return;
       resetLane();
     });
     
-    // Touch swipe controls
-    let touchStartX = null;
-    window.addEventListener("touchstart", (e) => {
-      if (!gameStarted || gameOver) return;
-      touchStartX = e.touches[0].clientX;
-    });
-    
-    window.addEventListener("touchmove", (e) => {
-      if (!gameStarted || gameOver || touchStartX === null) return;
+    rightBtn.addEventListener("touchend", (e) => {
       e.preventDefault();
+      if (!gameStarted || gameOver) return;
+      resetLane();
     });
     
-    window.addEventListener("touchend", (e) => {
-      if (!gameStarted || gameOver || touchStartX === null) return;
-      
-      const touchEndX = e.changedTouches[0].clientX;
-      const diff = touchEndX - touchStartX;
-      
-      if (diff > 50) moveRight();
-      else if (diff < -50) moveLeft();
-      else resetLane();
-      
-      touchStartX = null;
+    // Language selection
+    pashtoBtn.addEventListener("click", () => {
+      setLanguage('pashto');
+      pashtoBtn.classList.add('active');
+      dariBtn.classList.remove('active');
+      englishBtn.classList.remove('active');
     });
+    
+    dariBtn.addEventListener("click", () => {
+      setLanguage('dari');
+      dariBtn.classList.add('active');
+      pashtoBtn.classList.remove('active');
+      englishBtn.classList.remove('active');
+    });
+    
+    englishBtn.addEventListener("click", () => {
+      setLanguage('english');
+      englishBtn.classList.add('active');
+      pashtoBtn.classList.remove('active');
+      dariBtn.classList.remove('active');
+    });
+    
+    function setLanguage(lang) {
+      currentLanguage = lang;
+      const texts = languageTexts[lang];
+      
+      titleElement.textContent = texts.title;
+      subtitleElement.innerHTML = texts.subtitle;
+      startBtn.textContent = texts.startBtn;
+      gameOverTitle.textContent = texts.gameOverTitle;
+      tryAgainElement.textContent = texts.tryAgain;
+      restartBtn.textContent = texts.restartBtn;
+      downloadLink.textContent = texts.downloadText;
+      chaseWarning.textContent = texts.warning;
+      
+      updateScoreDisplay();
+      updateDistanceDisplay();
+      
+      if (gameOver) {
+        finalScore.textContent = texts.finalScore + score;
+      }
+    }
+    
+    function updateScoreDisplay() {
+      scoreDisplay.textContent = languageTexts[currentLanguage].score + score;
+    }
+    
+    function updateDistanceDisplay() {
+      distanceDisplay.textContent = languageTexts[currentLanguage].distance + Math.round(chaseDistance) + "m";
+    }
     
     // Start game button
     startBtn.addEventListener("click", () => {
@@ -460,51 +656,25 @@
     // Download link
     downloadLink.addEventListener("click", (e) => {
       e.preventDefault();
-      alert("Thank you for your interest! The app would download now.");
-      // In a real implementation, this would link to your app store page
+      alert(currentLanguage === 'pashto' 
+        ? "ستاسې علاقې مننه! زموږ اپلیکیشن ډاونلوډ کیږي..." 
+        : currentLanguage === 'dari' 
+          ? "از علاقه شما متشکریم! برنامه ما در حال دانلود است..." 
+          : "Thank you for your interest! Downloading our app...");
     });
-    
-    // Create particle effect
-    function createParticles(x, y, color) {
-      const particlesContainer = document.getElementById('particles-container');
-      const particleCount = 15;
-      
-      for (let i = 0; i < particleCount; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.width = `${5 + Math.random() * 10}px`;
-        particle.style.height = particle.style.width;
-        particle.style.left = `${x}px`;
-        particle.style.top = `${y}px`;
-        particle.style.background = color;
-        particle.style.boxShadow = `0 0 8px ${color}`;
-        
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 20 + Math.random() * 50;
-        const duration = 500 + Math.random() * 1000;
-        
-        particle.style.transition = `all ${duration}ms ease-out`;
-        particlesContainer.appendChild(particle);
-        
-        // Animate particle
-        setTimeout(() => {
-          particle.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
-          particle.style.opacity = '0';
-        }, 10);
-        
-        // Remove particle after animation
-        setTimeout(() => {
-          particlesContainer.removeChild(particle);
-        }, duration);
-      }
-    }
     
     // Reset game state
     function resetGame() {
       score = 0;
-      scoreDisplay.textContent = `💰 Score: ${score}`;
+      distance = 100;
+      gameSpeed = 0.2;
+      chaseSpeed = 0.22;
+      chaseDistance = 100;
+      updateScoreDisplay();
+      updateDistanceDisplay();
       playerX = 0;
       player.position.x = 0;
+      chaser.position.z = -chaseDistance;
       
       // Reset obstacles and coins
       obstacles.forEach(obs => {
@@ -527,13 +697,19 @@
       // Smooth player movement
       player.position.x += (playerX - player.position.x) * 0.2;
       
+      // Smooth camera movement
+      camera.position.x += (targetCameraPosition.x - camera.position.x) * 0.1;
+      camera.position.y += (targetCameraPosition.y - camera.position.y) * 0.1;
+      camera.position.z += (targetCameraPosition.z - camera.position.z) * 0.1;
+      camera.lookAt(player.position.x, player.position.y, player.position.z - 5);
+      
       // Rotate player for visual effect
       player.rotation.z += (playerX - player.position.x) * 0.02;
       
       // Move floor objects
       obstacles.forEach((obs) => {
-        obs.position.z += 0.2;
-        obs.rotation.z += 0.02;
+        obs.position.z += gameSpeed;
+        obs.rotation.y += 0.02;
         
         if (obs.position.z > 5) {
           obs.position.z = -200;
@@ -543,16 +719,13 @@
         // Collision detection
         if (Math.abs(player.position.x - obs.position.x) < 1.5 &&
             Math.abs(player.position.z - obs.position.z) < 1.5) {
-          gameOver = true;
-          finalScore.textContent = `Your score: ${score}`;
-          gameOverScreen.style.display = "flex";
-          createParticles(window.innerWidth/2, window.innerHeight/2, 'rgba(255, 0, 0, 0.7)');
+          endGame();
           return;
         }
       });
       
       coins.forEach((coin) => {
-        coin.position.z += 0.2;
+        coin.position.z += gameSpeed;
         coin.rotation.y += 0.05;
         
         if (coin.position.z > 5) {
@@ -563,23 +736,50 @@
         if (Math.abs(player.position.x - coin.position.x) < 1.5 &&
             Math.abs(player.position.z - coin.position.z) < 1.5) {
           score += 10;
-          scoreDisplay.textContent = `💰 Score: ${score}`;
+          updateScoreDisplay();
           coin.position.z = -200;
           coin.position.x = (Math.random() > 0.5 ? -3 : 3);
           
-          // Create particle effect at coin position
-          const vector = new THREE.Vector3();
-          vector.setFromMatrixPosition(coin.matrixWorld);
-          vector.project(camera);
-          
-          const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-          const y = -(vector.y * 0.5 - 0.5) * window.innerHeight;
-          
-          createParticles(x, y, 'rgba(255, 215, 0, 0.8)');
+          // Speed up slightly when collecting coins
+          gameSpeed += 0.001;
         }
       });
       
+      // Move chaser
+      chaser.position.z += chaseSpeed;
+      chaser.rotation.y += 0.03;
+      
+      // Calculate distance between player and chaser
+      chaseDistance = player.position.z - chaser.position.z;
+      updateDistanceDisplay();
+      
+      // Update progress bar
+      const progress = 1 - (chaseDistance / 100);
+      progressFill.style.transform = `scaleX(${progress})`;
+      
+      // Show warning if chaser is close
+      if (chaseDistance < 20) {
+        chaseWarning.style.opacity = "1";
+      } else {
+        chaseWarning.style.opacity = "0";
+      }
+      
+      // Increase chaser speed over time
+      chaseSpeed += 0.0001;
+      
+      // Check if chaser caught player
+      if (chaseDistance < 2) {
+        endGame();
+        return;
+      }
+      
       renderer.render(scene, camera);
+    }
+    
+    function endGame() {
+      gameOver = true;
+      finalScore.textContent = languageTexts[currentLanguage].finalScore + score;
+      gameOverScreen.style.display = "flex";
     }
     
     // Initial render
