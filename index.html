@@ -1,185 +1,176 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>روزنامچه 3D Demo</title>
+  <meta charset="UTF-8">
+  <title>Cash Flow Runner 3D</title>
   <style>
-    body, html {
-      margin: 0; padding: 0; overflow: hidden;
-      height: 100%; width: 100%;
-      font-family: Tahoma, sans-serif;
-      background: #000;
-      color: white;
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #111;
+    }
+    #info {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: Arial, sans-serif;
+      font-size: 20px;
+      color: #fff;
+      z-index: 1;
       text-align: center;
-    }
-    #overlay {
-      position: absolute;
-      top: 10px; left: 0; right: 0;
-      z-index: 10;
-      font-size: 20px;
-      font-weight: bold;
-    }
-    #download-screen {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 20;
-      display: none;
-    }
-    #download-screen h1 {
-      font-size: 28px;
-      margin-bottom: 20px;
-      color: #ffd700;
-    }
-    #download-screen p {
-      font-size: 18px;
-      margin-bottom: 30px;
-    }
-    .download-btn {
-      padding: 16px 30px;
-      background: #28a745;
-      color: white;
-      font-size: 20px;
-      font-weight: bold;
-      border: none;
-      border-radius: 12px;
-      text-decoration: none;
-    }
-    #controls {
-      position: absolute;
-      bottom: 20px; left: 0; right: 0;
-      display: flex; justify-content: center;
-      gap: 20px;
-      z-index: 15;
-    }
-    .ctrl-btn {
-      width: 70px; height: 70px;
-      border-radius: 50%;
-      font-size: 28px;
-      border: none;
-      background: rgba(255,255,255,0.2);
-      color: white;
-      font-weight: bold;
+      padding: 6px 14px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 8px;
     }
   </style>
 </head>
 <body>
-  <div id="overlay">امتیاز: <span id="score">0</span></div>
+  <div id="info">💰 Collect Profit Coins • Avoid Debt Blocks</div>
 
-  <div id="controls">
-    <button class="ctrl-btn" id="left">⬅️</button>
-    <button class="ctrl-btn" id="right">➡️</button>
-  </div>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
 
-  <div id="download-screen">
-    <h1>🎉 تبریک!</h1>
-    <p>شما سود جمع کردید. حالا در دنیای واقعی هم برنده باشید.</p>
-    <a href="https://mld10sar.github.io/Esmat/app-release.apk" class="download-btn" download>📥 دانلود روزنامچه</a>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
   <script>
     // Scene setup
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({antialias:true});
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Lighting
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(0,10,5);
-    scene.add(light);
-
-    // Player
-    const playerGeo = new THREE.BoxGeometry(1,1,1);
-    const playerMat = new THREE.MeshStandardMaterial({color:0x007bff});
-    const player = new THREE.Mesh(playerGeo, playerMat);
-    player.position.set(0,0,5);
+    // Player (cube = shopkeeper)
+    const geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+    const material = new THREE.MeshStandardMaterial({ color: 0x0077ff });
+    const player = new THREE.Mesh(geometry, material);
     scene.add(player);
-    let lane = 0; // -1 left, 0 middle, 1 right
 
     // Floor
-    const floorGeo = new THREE.PlaneGeometry(20,200);
-    const floorMat = new THREE.MeshStandardMaterial({color:0x333333});
+    const floorGeo = new THREE.PlaneGeometry(20, 1000);
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
     const floor = new THREE.Mesh(floorGeo, floorMat);
-    floor.rotation.x = -Math.PI/2;
-    floor.position.z = -90;
+    floor.rotation.x = -Math.PI / 2;
     scene.add(floor);
 
-    // Obstacles & Coins
-    let objects = [];
-    let score = 0;
-    let invincible = false;
-    let startTime = Date.now();
+    // Lighting
+    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambient);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    dirLight.position.set(5, 10, 7);
+    scene.add(dirLight);
 
-    function spawnItem() {
-      const type = Math.random()<0.7?"coin":"obstacle";
-      const geo = new THREE.BoxGeometry(1,1,1);
-      const mat = new THREE.MeshStandardMaterial({color: type==="coin"?0xffd700:0xff0000});
-      const item = new THREE.Mesh(geo, mat);
-      const laneChoice = [-2,0,2][Math.floor(Math.random()*3)];
-      item.position.set(laneChoice,0,-100);
-      item.userData = {type};
-      scene.add(item);
-      objects.push(item);
+    // Camera position
+    camera.position.z = 5;
+    camera.position.y = 3;
+    camera.lookAt(0, 0, 0);
+
+    // Obstacles and coins
+    const obstacles = [];
+    const coins = [];
+
+    function spawnObstacle(zPos) {
+      const geo = new THREE.BoxGeometry(2, 2, 2);
+      const mat = new THREE.MeshStandardMaterial({ color: 0xff4444 });
+      const obs = new THREE.Mesh(geo, mat);
+      obs.position.set((Math.random() > 0.5 ? -3 : 3), 1, zPos);
+      scene.add(obs);
+      obstacles.push(obs);
     }
 
-    // Spawn every 1s
-    setInterval(spawnItem,1000);
+    function spawnCoin(zPos) {
+      const geo = new THREE.SphereGeometry(0.7, 16, 16);
+      const mat = new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0x333300 });
+      const coin = new THREE.Mesh(geo, mat);
+      coin.position.set((Math.random() > 0.5 ? -3 : 3), 1, zPos);
+      scene.add(coin);
+      coins.push(coin);
+    }
 
-    // Controls
-    document.getElementById("left").onclick=()=>{lane=Math.max(-1,lane-1);};
-    document.getElementById("right").onclick=()=>{lane=Math.min(1,lane+1);};
-    window.addEventListener("keydown",(e)=>{
-      if(e.key==="ArrowLeft") lane=Math.max(-1,lane-1);
-      if(e.key==="ArrowRight") lane=Math.min(1,lane+1);
+    for (let i = -20; i > -200; i -= 10) {
+      if (Math.random() > 0.5) spawnObstacle(i);
+      else spawnCoin(i);
+    }
+
+    // Movement
+    let playerX = 0;
+    const laneOffset = 3;
+
+    function moveLeft() {
+      playerX = -laneOffset;
+    }
+    function moveRight() {
+      playerX = laneOffset;
+    }
+    function resetLane() {
+      playerX = 0;
+    }
+
+    // Keyboard controls
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") moveLeft();
+      if (e.key === "ArrowRight") moveRight();
+      if (e.key === "ArrowUp") resetLane();
     });
 
-    // Game loop
-    function animate(){
-      requestAnimationFrame(animate);
-      player.position.x = lane*2;
+    // Touch controls
+    let touchStartX = null;
+    window.addEventListener("touchstart", (e) => {
+      touchStartX = e.touches[0].clientX;
+    });
+    window.addEventListener("touchend", (e) => {
+      if (touchStartX === null) return;
+      const touchEndX = e.changedTouches[0].clientX;
+      const diff = touchEndX - touchStartX;
+      if (diff > 50) moveRight();
+      else if (diff < -50) moveLeft();
+      else resetLane();
+      touchStartX = null;
+    });
 
-      objects.forEach((o)=>{
-        o.position.z += 0.5; // move toward player
-        if(o.position.distanceTo(player.position)<1){
-          if(o.userData.type==="coin"){
-            score+=10;
-            document.getElementById("score").innerText=score;
-            scene.remove(o);
-          } else if(!invincible) {
-            score=Math.max(0,score-20);
-            document.getElementById("score").innerText=score;
-            invincible=true;
-            player.material.color.set(0x00ff00);
-            setTimeout(()=>{
-              invincible=false;
-              player.material.color.set(0x007bff);
-            },2000);
-          }
+    // Score
+    let score = 0;
+    const info = document.getElementById("info");
+
+    // Animate
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Smooth player movement
+      player.position.x += (playerX - player.position.x) * 0.2;
+
+      // Move floor objects
+      obstacles.forEach((obs) => {
+        obs.position.z += 0.2;
+        if (obs.position.z > 5) {
+          obs.position.z = -200;
+        }
+        // Collision detection
+        if (Math.abs(player.position.x - obs.position.x) < 1.5 &&
+            Math.abs(player.position.z - obs.position.z) < 1.5) {
+          info.textContent = "💥 Hit Debt Block! Game Over • Score: " + score;
+          cancelAnimationFrame(animate);
         }
       });
-      objects = objects.filter(o=>o.position.z<10);
 
-      renderer.render(scene,camera);
+      coins.forEach((coin) => {
+        coin.position.z += 0.2;
+        if (coin.position.z > 5) {
+          coin.position.z = -200;
+        }
+        if (Math.abs(player.position.x - coin.position.x) < 1.5 &&
+            Math.abs(player.position.z - coin.position.z) < 1.5) {
+          score += 10;
+          info.textContent = "💰 Score: " + score;
+          coin.position.z = -200;
+        }
+      });
 
-      // End after 15s
-      if(Date.now()-startTime>15000){
-        document.getElementById("download-screen").style.display="flex";
-      }
+      renderer.render(scene, camera);
     }
-    camera.position.set(0,5,10);
-    camera.lookAt(0,0,0);
     animate();
 
-    window.addEventListener("resize",()=>{
-      camera.aspect=window.innerWidth/window.innerHeight;
+    // Resize handler
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
