@@ -116,17 +116,29 @@
         return {type: kinds[Math.floor(Math.random()*kinds.length)]};
       }
 
-      function spawn(now){
-        lastSpawn = now;
-        const startX = 40 + Math.random() * (canvas.width/devicePixelRatio - 80);
-        const angle = (Math.random()*-1 - 1) * Math.PI/4; // upward
-        const speed = 6 + Math.random()*4;
-        const vx = (Math.random()-0.5)*3;
-        const vy = -speed;
-        const f = randomFruit(startX);
-        const radius = (f.type==='bomb')?26:(f.type==='roz'?34:22 + Math.random()*6);
-        fruits.push({x:startX,y:canvas.height/devicePixelRatio+20,vx,vy,ax:0,ay:gravity,r:radius,type:f.type,spawned:now,hit:false,shards:[]});
-      }
+     function spawn(now){
+  lastSpawn = now;
+  const startX = 40 + Math.random() * (canvas.width/devicePixelRatio - 80);
+  const vy = 1 + Math.random() * 2; // small downward velocity
+  const vx = (Math.random() - 0.5) * 2; // slight horizontal drift
+  const f = randomFruit(startX);
+  const radius = (f.type==='bomb')?26:(f.type==='roz'?34:22 + Math.random()*6);
+  
+  // Spawn at the TOP of the screen
+  fruits.push({
+    x: startX,
+    y: -radius, // Start slightly above the canvas
+    vx,
+    vy,
+    ax: 0,
+    ay: gravity,
+    r: radius,
+    type: f.type,
+    spawned: now,
+    hit: false,
+    shards: []
+  });
+}
 
       // drawing helpers
       function drawFruit(fr){
