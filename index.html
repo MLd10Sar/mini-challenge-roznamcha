@@ -49,7 +49,7 @@
     </header>
 
     <div class="stage">
-      <canvas id="gameCanvas" width="900" height="560" aria-label="بازی قطع میوه"></canvas>
+      <canvas id="gameCanvas" width="900" height="560" style="touch-action: none;" aria-label="بازی قطع میوه"></canvas>
 
       <div class="watermark">روزنامچه</div>
 
@@ -90,11 +90,50 @@
       }
       fitCanvas();
       window.addEventListener('resize', fitCanvas);
-
+      window.addEventListener('load', fitCanvas);
       let score = 0;
       let timeLeft = 60; // seconds
       let running = true;
 
+      function flashScreen(color, duration) {
+  const flash = document.createElement('div');
+  Object.assign(flash.style, {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    background: color,
+    opacity: 0.3,
+    pointerEvents: 'none',
+    zIndex: 9999,
+  });
+  document.body.appendChild(flash);
+  setTimeout(() => {
+    flash.style.transition = 'opacity 0.2s';
+    flash.style.opacity = '0';
+    setTimeout(() => flash.remove(), 200);
+  }, duration);
+}
+
+    function shakeScreen(intensity = 5, duration = 200) {
+  const container = document.querySelector('.container');
+  const originalTransform = container.style.transform || '';
+  let start = null;
+  function step(timestamp) {
+    if (!start) start = timestamp;
+    const progress = timestamp - start;
+    if (progress < duration) {
+      const x = (Math.random() - 0.5) * intensity;
+      const y = (Math.random() - 0.5) * intensity;
+      container.style.transform = `translate(${x}px, ${y}px)`;
+      requestAnimationFrame(step);
+    } else {
+      container.style.transform = originalTransform;
+    }
+  }
+  requestAnimationFrame(step);
+}
       // pointer tracking for slicing
       let pointerPath = []; // last points
       const MAX_PATH = 6;
@@ -122,8 +161,7 @@
   let vy = 0.5 + Math.random() * 1;
   const vx = (Math.random() - 0.5) * 1.5;
   const f = randomFruit(startX);
-const radius = (f.type === 'bomb') ? 32 : (f.type === 'roz' ? 40 : 28 + Math.random() * 6);  
-  // Set gravity conditionally
+const radius = (f.type === 'bomb') ? 40 : (f.type === 'roz' ? 50 : 34 + Math.random() * 8);  // Set gravity conditionally
   let gravity = 0.18; // default for normal fruits
   if (f.type === 'roz') {
     vy *= 0.7;       // slower initial fall for Roznamcha fruit
@@ -148,28 +186,20 @@ const radius = (f.type === 'bomb') ? 32 : (f.type === 'roz' ? 40 : 28 + Math.ran
       function drawFruit(fr){
         ctx.save();
         ctx.translate(fr.x,fr.y);
+        ctx.fillText('بمب ⚠️', 0, 0);
         // shadow
         ctx.beginPath(); ctx.ellipse(0, fr.r+8, fr.r*0.9, fr.r*0.35, 0,0,Math.PI*2); ctx.fillStyle='rgba(0,0,0,0.12)'; ctx.fill();
 
         // body
         if(fr.type==='bomb'){
-          ctx.beginPath(); ctx.arc(0,0,fr.r,0,Math.PI*2); ctx.fillStyle='#111'; ctx.fill();
-          ctx.fillStyle='#fff'; ctx.font='bold 12px Vazirmatn,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('بمب',0,0);
-        } else if(fr.type==='roz'){
-          // Roznamcha branded fruit (use purple-green gradient)
-          const g = ctx.createLinearGradient(-fr.r,-fr.r,fr.r,fr.r); g.addColorStop(0,'#6c1aa8'); g.addColorStop(1,'#10b981');
-          ctx.beginPath(); ctx.arc(0,0,fr.r,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
-          // logo text
-          ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.font='bold 12px Vazirmatn,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('روزنامچه',0,0);
-        } else {
-          const colors = {apple:'#ef4444',orange:'#fb923c',kiwi:'#86efac',banana:'#facc15',grape:'#7c3aed',melon:'#34d399'};
-          const col = colors[fr.type] || '#f97316';
-          ctx.beginPath(); ctx.arc(0,0,fr.r,0,Math.PI*2); ctx.fillStyle=col; ctx.fill();
-          // small label
-          ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.font='600 11px Vazirmatn,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
-          const label = fr.type==='apple'? 'سیب' : fr.type==='orange'? 'پرتقال': fr.type==='kiwi'?'کیوی':fr.type==='banana'?'موز':fr.type==='grape'?'انگور':'خربزه';
-          ctx.fillText(label,0,0);
-        }
+  ctx.fillStyle='#fff'; ctx.font='bold 16px Vazirmatn,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('بمب',0,0);
+} else if(fr.type==='roz'){
+  ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.font='bold 16px Vazirmatn,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('روزنامچه',0,0);
+} else {
+  ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.font='600 15px Vazirmatn,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  const label = fr.type==='apple'? 'سیب' : fr.type==='orange'? 'پرتقال': fr.type==='kiwi'?'کیوی':fr.type==='banana'?'موز':fr.type==='grape'?'انگور':'خربزه';
+  ctx.fillText(label,0,0);
+}
 
         ctx.restore();
       }
@@ -243,7 +273,7 @@ const radius = (f.type === 'bomb') ? 32 : (f.type === 'roz' ? 40 : 28 + Math.ran
                 f.hit = true;
                 createShards(f, f.x, f.y);
                 // scoring
-                if(f.type==='bomb'){ score = Math.max(0, score - 20); }
+                if(f.type==='bomb'){ score = Math.max(0, score - 20);flashScreen('#ff4444', 200); shakeScreen(8, 300);  }
                 else if(f.type==='roz'){ score += 100; flashRozMessage(); }
                 else score += 10;
                 scoreEl.textContent = score;
