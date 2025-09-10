@@ -2,177 +2,605 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Cash Flow Runner 3D</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
     body {
       margin: 0;
       overflow: hidden;
       background: #111;
+      font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+      color: white;
     }
+    
+    #game-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+    }
+    
     #info {
       position: absolute;
       top: 10px;
       left: 50%;
       transform: translateX(-50%);
-      font-family: Arial, sans-serif;
       font-size: 20px;
       color: #fff;
-      z-index: 1;
+      z-index: 10;
       text-align: center;
-      padding: 6px 14px;
-      background: rgba(0,0,0,0.5);
-      border-radius: 8px;
+      padding: 8px 16px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 12px;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      transition: all 0.3s ease;
+    }
+    
+    #score-display {
+      font-size: 24px;
+      font-weight: bold;
+      color: #ffd700;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+    
+    #mobile-controls {
+      position: absolute;
+      bottom: 30px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      z-index: 10;
+      padding: 0 20px;
+    }
+    
+    .control-btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: rgba(0, 119, 255, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      color: white;
+      user-select: none;
+      backdrop-filter: blur(5px);
+      border: 2px solid rgba(255,255,255,0.2);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: all 0.1s ease;
+    }
+    
+    .control-btn:active {
+      transform: scale(0.9);
+      background: rgba(0, 119, 255, 1);
+    }
+    
+    #center-btn {
+      background: rgba(255, 215, 0, 0.7);
+    }
+    
+    #center-btn:active {
+      background: rgba(255, 215, 0, 1);
+    }
+    
+    #start-screen, #game-over {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 20;
+      backdrop-filter: blur(10px);
+    }
+    
+    #game-over {
+      display: none;
+    }
+    
+    h1 {
+      font-size: 42px;
+      margin-bottom: 20px;
+      color: #ffd700;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+    }
+    
+    h2 {
+      font-size: 32px;
+      margin-bottom: 30px;
+      color: #ffd700;
+      text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    }
+    
+    p {
+      font-size: 18px;
+      margin-bottom: 30px;
+      text-align: center;
+      max-width: 80%;
+      line-height: 1.5;
+    }
+    
+    .btn {
+      padding: 15px 40px;
+      font-size: 20px;
+      background: linear-gradient(to right, #0077ff, #0055cc);
+      border: none;
+      border-radius: 50px;
+      color: white;
+      cursor: pointer;
+      margin-top: 20px;
+      box-shadow: 0 4px 15px rgba(0, 119, 255, 0.4);
+      transition: all 0.3s ease;
+    }
+    
+    .btn:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 8px rgba(0, 119, 255, 0.4);
+    }
+    
+    #particles-container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+    }
+    
+    .particle {
+      position: absolute;
+      background: rgba(255, 215, 0, 0.6);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(2); opacity: 0; }
+    }
+    
+    .pulse {
+      animation: pulse 0.5s ease-out;
+    }
+    
+    #download-promo {
+      position: absolute;
+      bottom: 120px;
+      width: 100%;
+      text-align: center;
+      font-size: 16px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px;
+      backdrop-filter: blur(5px);
+      z-index: 10;
+    }
+    
+    #download-promo a {
+      color: #00ccff;
+      text-decoration: none;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div id="info">💰 Collect Profit Coins • Avoid Debt Blocks</div>
+  <div id="game-container">
+    <div id="info">
+      <div id="score-display">💰 Score: 0</div>
+    </div>
+    
+    <div id="particles-container"></div>
+    
+    <div id="mobile-controls">
+      <div class="control-btn" id="left-btn">←</div>
+      <div class="control-btn" id="center-btn">↑</div>
+      <div class="control-btn" id="right-btn">→</div>
+    </div>
+    
+    <div id="download-promo">
+      Enjoying the game? <a href="#" id="download-link">Download our app for more exciting challenges!</a>
+    </div>
+    
+    <div id="start-screen">
+      <h1>Cash Flow Runner 3D</h1>
+      <p>Collect golden coins to grow your business and avoid red debt blocks!<br>Swipe or use arrow keys to move.</p>
+      <button class="btn" id="start-btn">Start Game</button>
+    </div>
+    
+    <div id="game-over">
+      <h2>Game Over</h2>
+      <p id="final-score">Your score: 0</p>
+      <p>Ready to improve your financial skills?</p>
+      <button class="btn" id="restart-btn">Play Again</button>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
-
   <script>
-    // Scene setup
+    // Game variables
+    let score = 0;
+    let gameStarted = false;
+    let gameOver = false;
+    
+    // Start screen elements
+    const startScreen = document.getElementById('start-screen');
+    const startBtn = document.getElementById('start-btn');
+    const gameOverScreen = document.getElementById('game-over');
+    const restartBtn = document.getElementById('restart-btn');
+    const finalScore = document.getElementById('final-score');
+    const scoreDisplay = document.getElementById('score-display');
+    const downloadLink = document.getElementById('download-link');
+    
+    // Mobile controls
+    const leftBtn = document.getElementById('left-btn');
+    const centerBtn = document.getElementById('center-btn');
+    const rightBtn = document.getElementById('right-btn');
+    
+    // Initialize Three.js
     const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x071a33);
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    // Player (cube = shopkeeper)
-    const geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
-    const material = new THREE.MeshStandardMaterial({ color: 0x0077ff });
-    const player = new THREE.Mesh(geometry, material);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.getElementById('game-container').appendChild(renderer.domElement);
+    
+    // Add stars to background
+    function addStars() {
+      const starGeometry = new THREE.BufferGeometry();
+      const starMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.1,
+        sizeAttenuation: true
+      });
+      
+      const starVertices = [];
+      for (let i = 0; i < 1000; i++) {
+        const x = (Math.random() - 0.5) * 1000;
+        const y = (Math.random() - 0.5) * 1000;
+        const z = (Math.random() - 0.5) * 1000;
+        starVertices.push(x, y, z);
+      }
+      
+      starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+      const stars = new THREE.Points(starGeometry, starMaterial);
+      scene.add(stars);
+    }
+    addStars();
+    
+    // Player (shopkeeper)
+    const playerGeometry = new THREE.CapsuleGeometry(0.7, 1, 4, 8);
+    const playerMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0x0077ff,
+      emissive: 0x0044aa,
+      emissiveIntensity: 0.2,
+      metalness: 0.5,
+      roughness: 0.2
+    });
+    const player = new THREE.Mesh(playerGeometry, playerMaterial);
+    player.rotation.x = Math.PI / 2;
     scene.add(player);
-
-    // Floor
+    
+    // Floor with improved texture
     const floorGeo = new THREE.PlaneGeometry(20, 1000);
-    const floorMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+    const floorMat = new THREE.MeshStandardMaterial({ 
+      color: 0x222222,
+      metalness: 0.3,
+      roughness: 0.8
+    });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
     scene.add(floor);
-
+    
+    // Add grid to floor
+    const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
+    gridHelper.position.y = 0.01;
+    scene.add(gridHelper);
+    
     // Lighting
-    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambient);
+    
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
     dirLight.position.set(5, 10, 7);
     scene.add(dirLight);
-
+    
+    // Add colored point lights for more visual interest
+    const pointLight1 = new THREE.PointLight(0x0077ff, 0.5, 20);
+    pointLight1.position.set(5, 5, 5);
+    scene.add(pointLight1);
+    
+    const pointLight2 = new THREE.PointLight(0xff4400, 0.5, 20);
+    pointLight2.position.set(-5, 3, -5);
+    scene.add(pointLight2);
+    
     // Camera position
     camera.position.z = 5;
     camera.position.y = 3;
     camera.lookAt(0, 0, 0);
-
+    
     // Obstacles and coins
     const obstacles = [];
     const coins = [];
-
+    
     function spawnObstacle(zPos) {
-      const geo = new THREE.BoxGeometry(2, 2, 2);
-      const mat = new THREE.MeshStandardMaterial({ color: 0xff4444 });
+      const geo = new THREE.ConeGeometry(1, 2, 8);
+      const mat = new THREE.MeshStandardMaterial({ 
+        color: 0xff4444,
+        emissive: 0x440000,
+        emissiveIntensity: 0.2,
+        metalness: 0.3,
+        roughness: 0.4
+      });
       const obs = new THREE.Mesh(geo, mat);
       obs.position.set((Math.random() > 0.5 ? -3 : 3), 1, zPos);
+      obs.rotation.x = Math.PI / 2;
       scene.add(obs);
       obstacles.push(obs);
     }
-
+    
     function spawnCoin(zPos) {
-      const geo = new THREE.SphereGeometry(0.7, 16, 16);
-      const mat = new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0x333300 });
+      const geo = new THREE.CylinderGeometry(0.8, 0.8, 0.2, 16);
+      const mat = new THREE.MeshStandardMaterial({ 
+        color: 0xffd700,
+        emissive: 0xaa9900,
+        emissiveIntensity: 0.3,
+        metalness: 0.7,
+        roughness: 0.2
+      });
       const coin = new THREE.Mesh(geo, mat);
       coin.position.set((Math.random() > 0.5 ? -3 : 3), 1, zPos);
+      coin.rotation.x = Math.PI / 2;
       scene.add(coin);
       coins.push(coin);
     }
-
-    for (let i = -20; i > -200; i -= 10) {
+    
+    // Initialize objects
+    for (let i = -20; i > -200; i -= 8) {
       if (Math.random() > 0.5) spawnObstacle(i);
       else spawnCoin(i);
     }
-
+    
     // Movement
     let playerX = 0;
     const laneOffset = 3;
-
+    
     function moveLeft() {
       playerX = -laneOffset;
     }
+    
     function moveRight() {
       playerX = laneOffset;
     }
+    
     function resetLane() {
       playerX = 0;
     }
-
+    
     // Keyboard controls
     window.addEventListener("keydown", (e) => {
+      if (!gameStarted || gameOver) return;
+      
       if (e.key === "ArrowLeft") moveLeft();
       if (e.key === "ArrowRight") moveRight();
       if (e.key === "ArrowUp") resetLane();
     });
-
-    // Touch controls
+    
+    // Mobile button controls
+    leftBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      if (!gameStarted || gameOver) return;
+      moveLeft();
+    });
+    
+    rightBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      if (!gameStarted || gameOver) return;
+      moveRight();
+    });
+    
+    centerBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      if (!gameStarted || gameOver) return;
+      resetLane();
+    });
+    
+    // Touch swipe controls
     let touchStartX = null;
     window.addEventListener("touchstart", (e) => {
+      if (!gameStarted || gameOver) return;
       touchStartX = e.touches[0].clientX;
     });
+    
+    window.addEventListener("touchmove", (e) => {
+      if (!gameStarted || gameOver || touchStartX === null) return;
+      e.preventDefault();
+    });
+    
     window.addEventListener("touchend", (e) => {
-      if (touchStartX === null) return;
+      if (!gameStarted || gameOver || touchStartX === null) return;
+      
       const touchEndX = e.changedTouches[0].clientX;
       const diff = touchEndX - touchStartX;
+      
       if (diff > 50) moveRight();
       else if (diff < -50) moveLeft();
       else resetLane();
+      
       touchStartX = null;
     });
-
-    // Score
-    let score = 0;
-    const info = document.getElementById("info");
-
-    // Animate
+    
+    // Start game button
+    startBtn.addEventListener("click", () => {
+      startScreen.style.display = "none";
+      gameStarted = true;
+      animate();
+    });
+    
+    // Restart game button
+    restartBtn.addEventListener("click", () => {
+      gameOverScreen.style.display = "none";
+      resetGame();
+      gameStarted = true;
+      gameOver = false;
+      animate();
+    });
+    
+    // Download link
+    downloadLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      alert("Thank you for your interest! The app would download now.");
+      // In a real implementation, this would link to your app store page
+    });
+    
+    // Create particle effect
+    function createParticles(x, y, color) {
+      const particlesContainer = document.getElementById('particles-container');
+      const particleCount = 15;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.width = `${5 + Math.random() * 10}px`;
+        particle.style.height = particle.style.width;
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        particle.style.background = color;
+        particle.style.boxShadow = `0 0 8px ${color}`;
+        
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 20 + Math.random() * 50;
+        const duration = 500 + Math.random() * 1000;
+        
+        particle.style.transition = `all ${duration}ms ease-out`;
+        particlesContainer.appendChild(particle);
+        
+        // Animate particle
+        setTimeout(() => {
+          particle.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
+          particle.style.opacity = '0';
+        }, 10);
+        
+        // Remove particle after animation
+        setTimeout(() => {
+          particlesContainer.removeChild(particle);
+        }, duration);
+      }
+    }
+    
+    // Reset game state
+    function resetGame() {
+      score = 0;
+      scoreDisplay.textContent = `💰 Score: ${score}`;
+      playerX = 0;
+      player.position.x = 0;
+      
+      // Reset obstacles and coins
+      obstacles.forEach(obs => {
+        obs.position.z = -200 + Math.random() * -50;
+        obs.position.x = (Math.random() > 0.5 ? -3 : 3);
+      });
+      
+      coins.forEach(coin => {
+        coin.position.z = -200 + Math.random() * -50;
+        coin.position.x = (Math.random() > 0.5 ? -3 : 3);
+      });
+    }
+    
+    // Game animation loop
     function animate() {
+      if (!gameStarted || gameOver) return;
+      
       requestAnimationFrame(animate);
-
+      
       // Smooth player movement
       player.position.x += (playerX - player.position.x) * 0.2;
-
+      
+      // Rotate player for visual effect
+      player.rotation.z += (playerX - player.position.x) * 0.02;
+      
       // Move floor objects
       obstacles.forEach((obs) => {
         obs.position.z += 0.2;
+        obs.rotation.z += 0.02;
+        
         if (obs.position.z > 5) {
           obs.position.z = -200;
+          obs.position.x = (Math.random() > 0.5 ? -3 : 3);
         }
+        
         // Collision detection
         if (Math.abs(player.position.x - obs.position.x) < 1.5 &&
             Math.abs(player.position.z - obs.position.z) < 1.5) {
-          info.textContent = "💥 Hit Debt Block! Game Over • Score: " + score;
-          cancelAnimationFrame(animate);
+          gameOver = true;
+          finalScore.textContent = `Your score: ${score}`;
+          gameOverScreen.style.display = "flex";
+          createParticles(window.innerWidth/2, window.innerHeight/2, 'rgba(255, 0, 0, 0.7)');
+          return;
         }
       });
-
+      
       coins.forEach((coin) => {
         coin.position.z += 0.2;
+        coin.rotation.y += 0.05;
+        
         if (coin.position.z > 5) {
           coin.position.z = -200;
+          coin.position.x = (Math.random() > 0.5 ? -3 : 3);
         }
+        
         if (Math.abs(player.position.x - coin.position.x) < 1.5 &&
             Math.abs(player.position.z - coin.position.z) < 1.5) {
           score += 10;
-          info.textContent = "💰 Score: " + score;
+          scoreDisplay.textContent = `💰 Score: ${score}`;
           coin.position.z = -200;
+          coin.position.x = (Math.random() > 0.5 ? -3 : 3);
+          
+          // Create particle effect at coin position
+          const vector = new THREE.Vector3();
+          vector.setFromMatrixPosition(coin.matrixWorld);
+          vector.project(camera);
+          
+          const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+          const y = -(vector.y * 0.5 - 0.5) * window.innerHeight;
+          
+          createParticles(x, y, 'rgba(255, 215, 0, 0.8)');
         }
       });
-
+      
       renderer.render(scene, camera);
     }
-    animate();
-
+    
+    // Initial render
+    renderer.render(scene, camera);
+    
     // Resize handler
     window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    
+    // Prevent zoom on double-tap
+    let lastTap = 0;
+    document.addEventListener('touchend', function(e) {
+      const currentTime = new Date().getTime();
+      const tapLength = currentTime - lastTap;
+      if (tapLength < 300 && tapLength > 0) {
+        e.preventDefault();
+      }
+      lastTap = currentTime;
     });
   </script>
 </body>
