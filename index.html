@@ -188,21 +188,68 @@ const radius = (f.type === 'bomb') ? 40 : (f.type === 'roz' ? 50 : 34 + Math.ran
         ctx.translate(fr.x,fr.y);
         ctx.fillText('بمب ⚠️', 0, 0);
         // shadow
-        ctx.beginPath(); ctx.ellipse(0, fr.r+8, fr.r*0.9, fr.r*0.35, 0,0,Math.PI*2); ctx.fillStyle='rgba(0,0,0,0.12)'; ctx.fill();
+         ctx.beginPath();
+  ctx.ellipse(0, fr.r + 8, fr.r * 0.9, fr.r * 0.35, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.fill();
 
         // body
-        if(fr.type==='bomb'){
-  ctx.fillStyle='#fff'; ctx.font='bold 16px Vazirmatn,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('بمب',0,0);
-} else if(fr.type==='roz'){
-  ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.font='bold 16px Vazirmatn,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('روزنامچه',0,0);
-} else {
-  ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.font='600 15px Vazirmatn,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
-  const label = fr.type==='apple'? 'سیب' : fr.type==='orange'? 'پرتقال': fr.type==='kiwi'?'کیوی':fr.type==='banana'?'موز':fr.type==='grape'?'انگور':'خربزه';
-  ctx.fillText(label,0,0);
-}
+         if (fr.type === 'bomb') {
+    ctx.beginPath();
+    ctx.arc(0, 0, fr.r, 0, Math.PI * 2);
+    ctx.fillStyle = '#111'; // Dark bomb
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 16px Vazirmatn,Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('بمب', 0, 0);
+  } else if (fr.type === 'roz') {
+    // Roznamcha branded fruit (purple-green gradient)
+    const g = ctx.createLinearGradient(-fr.r, -fr.r, fr.r, fr.r);
+    g.addColorStop(0, '#6c1aa8');
+    g.addColorStop(1, '#10b981');
+    ctx.beginPath();
+    ctx.arc(0, 0, fr.r, 0, Math.PI * 2);
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.font = 'bold 16px Vazirmatn,Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('روزنامچه', 0, 0);
+  } else {
+    // Normal fruits with beautiful colors
+    const colors = {
+      apple: '#ef4444',
+      orange: '#fb923c',
+      kiwi: '#86efac',
+      banana: '#facc15',
+      grape: '#7c3aed',
+      melon: '#34d399'
+    };
+    const col = colors[fr.type] || '#f97316'; // fallback to orange
 
-        ctx.restore();
-      }
+    ctx.beginPath();
+    ctx.arc(0, 0, fr.r, 0, Math.PI * 2);
+    ctx.fillStyle = col; // ✅ THIS MUST BE SET BEFORE FILL
+    ctx.fill();
+
+    // Draw label
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.font = '600 15px Vazirmatn,Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const label = fr.type === 'apple' ? 'سیب' :
+                  fr.type === 'orange' ? 'پرتقال' :
+                  fr.type === 'kiwi' ? 'کیوی' :
+                  fr.type === 'banana' ? 'موز' :
+                  fr.type === 'grape' ? 'انگور' : 'خربزه';
+    ctx.fillText(label, 0, 0);
+  }
+
+  ctx.restore();
+}
 
       // particle shards when sliced
       function createShards(fr, cx, cy){
