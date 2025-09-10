@@ -1,298 +1,297 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>دموی لودو — تبلیغ روزنامچه</title>
+  <title>دمو بازی — قطع میوه (Roznamcha)</title>
   <style>
     :root{
-      --bg:#0f1724; --card:#fff; --muted:#6b7280;
-      --p1:#ef4444; --p2:#3b82f6; --p3:#f59e0b; --p4:#10b981;
-      --space-size:44px;
-      --board-size:min(520px,90vw);
+      --bg:#0b1320; --panel:#ffffff; --accent:#6c1aa8; --accent-2:#10b981; --muted:#8b95a1;
+      --cta:#0ea5a3;
     }
     html,body{height:100%;margin:0;font-family:Vazirmatn,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
-    body{display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#071033 0%, #071a2b 100%);padding:18px}
-    .card{width:var(--board-size);background:var(--card);border-radius:16px;box-shadow:0 20px 50px rgba(2,6,23,.6);overflow:hidden}
-    header{padding:14px 18px;border-bottom:1px solid #f1f5f9;display:flex;gap:12px;align-items:center;justify-content:space-between}
-    header h1{font-size:1.05rem;margin:0;color:#0f1724}
-    header .promo{display:flex;gap:8px;align-items:center}
-    .promo a{background:var(--p2);color:white;padding:8px 12px;border-radius:10px;text-decoration:none;font-weight:700}
+    body{background:linear-gradient(180deg,#071226 0%, #071a2b 100%);display:flex;align-items:center;justify-content:center;padding:14px}
+    .container{width:100%;max-width:900px;border-radius:14px;background:linear-gradient(180deg,#ffffff,#f8fafc);overflow:hidden;box-shadow:0 20px 60px rgba(2,6,23,.6)}
+    header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #eef2f7}
+    header h1{margin:0;font-size:1.1rem;color:var(--bg);font-weight:800}
+    header .score{font-weight:800;color:var(--muted)}
 
-    .board-wrap{display:flex;flex-direction:column;align-items:center;padding:18px}
-    .board{width:100%;max-width:480px;height:480px;position:relative;background:linear-gradient(180deg,#f8fafc, #ffffff);border-radius:12px;display:flex;align-items:center;justify-content:center}
+    .stage{position:relative;background:linear-gradient(180deg,#eaf3ff,#ffffff);height:560px;display:flex;align-items:center;justify-content:center}
+    canvas{width:100%;height:100%;display:block}
 
-    /* circular path */
-    svg.path{width:90%;height:90%;position:absolute}
-    .space{position:absolute;width:var(--space-size);height:var(--space-size);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#111;border:4px solid #fff;box-shadow:0 6px 18px rgba(2,6,23,.25);transform:translate(-50%,-50%);transition:left .28s linear, top .28s linear}
+    .hud{display:flex;gap:12px;align-items:center;padding:12px 18px;border-top:1px solid #eef2f7;background:linear-gradient(180deg,#ffffff,#f8fafc)}
+    .hud .info{flex:1;color:#24303a;font-weight:700}
+    .hud .timer{font-weight:900;color:var(--accent)}
 
-    /* player pieces */
-    .piece{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;border:3px solid #fff;box-shadow:0 6px 18px rgba(2,6,23,.35);position:absolute;transform:translate(-50%,-50%);transition:left .28s linear, top .28s linear}
+    /* floating download CTA */
+    .cta{position:absolute;left:16px;bottom:16px;z-index:60;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#fff;padding:12px 16px;border-radius:14px;font-weight:900;box-shadow:0 12px 30px rgba(12,20,40,.35);text-decoration:none}
 
-    .piece.p1{background:var(--p1)}.piece.p2{background:var(--p2)}.piece.p3{background:var(--p3)}.piece.p4{background:var(--p4)}
+    /* overlay end screen */
+    .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(3,7,18,0.45),rgba(3,7,18,0.65));backdrop-filter:blur(2px);z-index:80;display:none}
+    .overlay.show{display:flex}
+    .card{background:#fff;padding:22px;border-radius:12px;max-width:420px;text-align:center}
+    .card h2{margin:0 0 10px 0;color:var(--bg)}
+    .card p{color:var(--muted);margin:0 0 18px 0}
+    .download-btn{display:inline-block;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:800}
 
-    .controls{width:100%;display:flex;gap:12px;padding:16px;border-top:1px solid #f1f5f9;align-items:center;justify-content:space-between}
-    .dice-btn{width:86px;height:86px;border-radius:14px;border:none;background:#0f1724;color:white;font-size:2.2rem;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(2,6,23,.4);cursor:pointer}
-    .info{flex:1;text-align:center;color:var(--muted);font-weight:700}
+    /* Roznamcha watermark */
+    .watermark{position:absolute;right:18px;top:18px;opacity:.08;font-size:42px;color:#000;pointer-events:none;font-weight:900}
 
-    .turn-indicator{display:flex;gap:8px;align-items:center}
-    .turn-dot{width:12px;height:12px;border-radius:50%}
-
-    /* mobile tweaks */
-    @media (max-width:420px){:root{--space-size:36px} .board{height:380px}}
-
-    /* modal promo */
-    .bottom-banner{background:linear-gradient(90deg,#0f1724 0%, rgba(15,23,36,0.8)100%);color:#fff;padding:12px 14px;display:flex;gap:12px;align-items:center;justify-content:space-between}
-    .download{background:linear-gradient(90deg,var(--p2),var(--p4));padding:10px 14px;border-radius:10px;color:white;font-weight:800;text-decoration:none}
-
-    .credits{font-size:12px;color:var(--muted);padding:8px 14px;text-align:center}
+    /* responsive */
+    @media (max-width:640px){ .stage{height:70vh} .watermark{font-size:30px} }
   </style>
 </head>
 <body>
-  <div class="card" role="application">
+  <div class="container" role="application">
     <header>
-      <h1>دمو — بازی شبیه لودو (نمایش)</h1>
-      <div class="promo">
-        <span style="color:var(--muted);font-size:.95rem">تبلیغ: اپلیکیشن Roznamcha</span>
-        <a href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" target="_blank" rel="noopener">دانلود اپ</a>
-      </div>
+      <h1>بزن و برش بزن — دموی Roznamcha</h1>
+      <div class="score">امتیاز: <span id="score">0</span></div>
     </header>
 
-    <div class="board-wrap">
-      <div class="board" id="board" aria-hidden="false">
-        <svg class="path" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
-          <!-- circular path visual only -->
-          <defs>
-            <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          </defs>
-          <circle cx="200" cy="200" r="135" stroke="#e6eef8" stroke-width="52" fill="none" stroke-linecap="round" filter="url(#glow)"/>
-        </svg>
-      </div>
+    <div class="stage">
+      <canvas id="gameCanvas" width="900" height="560" aria-label="بازی قطع میوه"></canvas>
 
-      <div class="controls">
-        <div class="turn-indicator" id="turnIndicator">
-          <div style="display:flex;flex-direction:column;align-items:flex-end">
-            <div style="font-weight:800">نوبت:</div>
-            <div id="currentPlayerLabel" style="font-weight:900;color:#0f1724">بازیکن 1</div>
-          </div>
+      <div class="watermark">روزنامچه</div>
+
+      <a class="cta" id="floatingCta" href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" target="_blank">📲 دانلود اپ Roznamcha</a>
+
+      <div class="overlay" id="overlay">
+        <div class="card">
+          <h2 id="overlayTitle">خسته نباشی!</h2>
+          <p id="overlayText">برای مدیریت حساب و گدام، اپ روزنامچه را نصب کن و کسب‌وکارت را ساده کن.</p>
+          <a id="overlayDownload" class="download-btn" href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" target="_blank">📥 دانلود اپ Roznamcha</a>
         </div>
-
-        <div class="info" id="info">برای شروع، تاس را بزنید.</div>
-
-        <button class="dice-btn" id="diceBtn" aria-label="تاس"><span id="diceFace">🎲</span></button>
       </div>
-
-      <div class="credits">قوانین ساده شده: هر بازیکن یک مهره دارد، کسی که یک دور کامل گردد برنده است. اگر روی مهرهٔ حریف فرود آیید، او به شروع بازمی‌گردد.</div>
     </div>
 
-    <div class="bottom-banner">
-      <div style="display:flex;flex-direction:column">
-        <strong>روزنامچه — حسابداری و مدیریت موجودی برای کسب‌وکارها</strong>
-        <span style="font-size:13px;color:#cbd5e1">می‌خواهید بازی در اپ شما نمایش داده شود؟ این نسخه نمایشی ساده برای جذب کاربران ساخته شده است.</span>
-      </div>
-      <a class="download" href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" target="_blank" rel="noopener">دانلود اپ Roznamcha</a>
+    <div class="hud">
+      <div class="info">میوه‌های مخصوص Roznamcha را ببرید تا پیام ویژه ببینید.</div>
+      <div class="timer">زمان: <span id="time">60</span>s</div>
     </div>
   </div>
 
   <script>
-    // Simple Ludo-like demo with 4 players (single piece each)
+    // Fruit Cutter — Simple, mobile-friendly, Roznamcha-branded
     (function(){
-      const board = document.getElementById('board');
-      const diceBtn = document.getElementById('diceBtn');
-      const diceFace = document.getElementById('diceFace');
-      const info = document.getElementById('info');
-      const currentPlayerLabel = document.getElementById('currentPlayerLabel');
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const scoreEl = document.getElementById('score');
+      const timeEl = document.getElementById('time');
+      const overlay = document.getElementById('overlay');
+      const overlayTitle = document.getElementById('overlayTitle');
+      const overlayText = document.getElementById('overlayText');
 
-      const center = {x: board.clientWidth/2, y: board.clientHeight/2};
-      // We'll compute positions relative to SVG viewBox (400x400)
-      const cx = 200, cy = 200, radius = 135;
-      const spaces = 20; // loop spaces
-      const players = [ {id:1,color:'p1'}, {id:2,color:'p2'}, {id:3,color:'p3'}, {id:4,color:'p4'} ];
-      const state = { pos: [ -1, -1, -1, -1 ], // -1 means at home
-                      finished: [false,false,false,false],
-                      cur: 0, rolling:false };
+      // logical size independent from CSS size
+      function fitCanvas(){
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = Math.round(rect.width * devicePixelRatio);
+        canvas.height = Math.round(rect.height * devicePixelRatio);
+        ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+      }
+      fitCanvas();
+      window.addEventListener('resize', fitCanvas);
 
-      // create space markers (hidden small dots for positioning)
-      const spacePoints = [];
-      for(let i=0;i<spaces;i++){
-        const angle = (i / spaces) * Math.PI*2 - Math.PI/2; // start top
-        const x = cx + Math.cos(angle)*radius;
-        const y = cy + Math.sin(angle)*radius;
-        spacePoints.push({x,y});
+      let score = 0;
+      let timeLeft = 60; // seconds
+      let running = true;
 
-        // optional small visual for spaces
-        const dot = document.createElement('div');
-        dot.className = 'space';
-        dot.style.left = x + 'px';
-        dot.style.top = y + 'px';
-        dot.style.width = '12px'; dot.style.height='12px'; dot.style.borderRadius='50%'; dot.style.border='2px solid rgba(255,255,255,0.6)'; dot.style.background='rgba(255,255,255,0.02)';
-        board.appendChild(dot);
+      // pointer tracking for slicing
+      let pointerPath = []; // last points
+      const MAX_PATH = 6;
+
+      // fruits
+      const fruits = [];
+      const gravity = 0.28;
+
+      // spawn settings
+      let spawnInterval = 700; // ms
+      let lastSpawn = 0;
+
+      // Roznamcha fruit appears about 1 in 12 spawns
+      function randomFruit(x){
+        const t = Math.random();
+        if(t < 0.08) return {type:'bomb'}; // bombs cause -points
+        if(t < 0.15) return {type:'roz'}; // roznamcha special
+        const kinds = ['apple','orange','kiwi','banana','grape','melon'];
+        return {type: kinds[Math.floor(Math.random()*kinds.length)]};
       }
 
-      // create pieces
-      const pieces = [];
-      players.forEach((p, idx)=>{
-        const el = document.createElement('div');
-        el.className = `piece ${p.color}`;
-        el.textContent = p.id;
-        // start off-board near corners
-        const startAngles = [ -40, 50, 140, -140];
-        const a = startAngles[idx]*Math.PI/180;
-        const sx = cx + Math.cos(a)*(radius+70);
-        const sy = cy + Math.sin(a)*(radius+70);
-        el.style.left = sx+'px'; el.style.top = sy+'px';
-        board.appendChild(el);
-        pieces.push(el);
-      });
+      function spawn(now){
+        lastSpawn = now;
+        const startX = 40 + Math.random() * (canvas.width/devicePixelRatio - 80);
+        const angle = (Math.random()*-1 - 1) * Math.PI/4; // upward
+        const speed = 6 + Math.random()*4;
+        const vx = (Math.random()-0.5)*3;
+        const vy = -speed;
+        const f = randomFruit(startX);
+        const radius = (f.type==='bomb')?26:(f.type==='roz'?34:22 + Math.random()*6);
+        fruits.push({x:startX,y:canvas.height/devicePixelRatio+20,vx,vy,ax:0,ay:gravity,r:radius,type:f.type,spawned:now,hit:false,shards:[]});
+      }
 
-      function placePieceOnSpace(playerIndex, spaceIndex){
-        // spaceIndex may be -1 (home)
-        if(spaceIndex<0){
-          // move to home cluster near corner
-          const startAngles = [ -40, 50, 140, -140];
-          const a = startAngles[playerIndex]*Math.PI/180;
-          const sx = cx + Math.cos(a)*(radius+70);
-          const sy = cy + Math.sin(a)*(radius+70);
-          pieces[playerIndex].style.left = sx+'px'; pieces[playerIndex].style.top = sy+'px';
+      // drawing helpers
+      function drawFruit(fr){
+        ctx.save();
+        ctx.translate(fr.x,fr.y);
+        // shadow
+        ctx.beginPath(); ctx.ellipse(0, fr.r+8, fr.r*0.9, fr.r*0.35, 0,0,Math.PI*2); ctx.fillStyle='rgba(0,0,0,0.12)'; ctx.fill();
+
+        // body
+        if(fr.type==='bomb'){
+          ctx.beginPath(); ctx.arc(0,0,fr.r,0,Math.PI*2); ctx.fillStyle='#111'; ctx.fill();
+          ctx.fillStyle='#fff'; ctx.font='bold 12px Vazirmatn,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('بمب',0,0);
+        } else if(fr.type==='roz'){
+          // Roznamcha branded fruit (use purple-green gradient)
+          const g = ctx.createLinearGradient(-fr.r,-fr.r,fr.r,fr.r); g.addColorStop(0,'#6c1aa8'); g.addColorStop(1,'#10b981');
+          ctx.beginPath(); ctx.arc(0,0,fr.r,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+          // logo text
+          ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.font='bold 12px Vazirmatn,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('روزنامچه',0,0);
         } else {
-          const sp = spacePoints[spaceIndex % spaces];
-          pieces[playerIndex].style.left = sp.x+'px'; pieces[playerIndex].style.top = sp.y+'px';
+          const colors = {apple:'#ef4444',orange:'#fb923c',kiwi:'#86efac',banana:'#facc15',grape:'#7c3aed',melon:'#34d399'};
+          const col = colors[fr.type] || '#f97316';
+          ctx.beginPath(); ctx.arc(0,0,fr.r,0,Math.PI*2); ctx.fillStyle=col; ctx.fill();
+          // small label
+          ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.font='600 11px Vazirmatn,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+          const label = fr.type==='apple'? 'سیب' : fr.type==='orange'? 'پرتقال': fr.type==='kiwi'?'کیوی':fr.type==='banana'?'موز':fr.type==='grape'?'انگور':'خربزه';
+          ctx.fillText(label,0,0);
+        }
+
+        ctx.restore();
+      }
+
+      // particle shards when sliced
+      function createShards(fr, cx, cy){
+        const pieces = 8 + Math.floor(Math.random()*6);
+        for(let i=0;i<pieces;i++){
+          const ang = Math.random()*Math.PI*2;
+          const spd = 2 + Math.random()*5;
+          fr.shards.push({x:cx,y:cy,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,life:40 + Math.random()*30,col: (fr.type==='roz'?'#9b5cf6':'#fff')});
         }
       }
 
-      function updateUI(){
-        currentPlayerLabel.textContent = 'بازیکن ' + (state.cur+1);
+      // slicing detection: check segment intersect circle
+      function segmentCircle(x1,y1,x2,y2,cx,cy,r){
+        const vx = x2-x1, vy = y2-y1;
+        const wx = cx - x1, wy = cy - y1;
+        const proj = (vx*wx + vy*wy) / (vx*vx + vy*vy || 1);
+        const closestX = x1 + Math.max(0, Math.min(1, proj)) * vx;
+        const closestY = y1 + Math.max(0, Math.min(1, proj)) * vy;
+        const dx = closestX - cx, dy = closestY - cy;
+        return (dx*dx + dy*dy) <= r*r;
       }
 
-      function nextTurn(){
-        // if someone already finished all loop (we'll treat finish when made a full loop)
-        let alive = false;
-        for(let i=0;i<4;i++){ if(!state.finished[i]) alive=true }
-        if(!alive){ info.textContent='بازی تمام شد.'; return; }
-
-        // move to next non-finished
-        do{ state.cur = (state.cur+1)%4; }while(state.finished[state.cur]);
-        updateUI();
-        state.rolling=false;
+      // pointer events
+      let pointerDown = false;
+      function addPointerPoint(x,y){
+        pointerPath.push({x,y,t:Date.now()});
+        if(pointerPath.length>MAX_PATH) pointerPath.shift();
       }
 
-      function rollDiceForCurrent(){
-        if(state.rolling) return;
-        state.rolling=true;
-        diceBtn.disabled = true;
-        diceFace.textContent='...';
-        // short rolling animation
-        const rollAnim = setInterval(()=>{ diceFace.textContent = Math.floor(Math.random()*6)+1; }, 80);
-        setTimeout(()=>{
-          clearInterval(rollAnim);
-          const val = Math.floor(Math.random()*6)+1;
-          diceFace.textContent = val;
-          info.textContent = 'شما ' + val + ' انداختید.';
-          movePiece(state.cur, val);
-        }, 700);
-      }
+      canvas.addEventListener('pointerdown', e=>{ pointerDown=true; addPointerPoint(e.offsetX, e.offsetY); e.preventDefault(); });
+      canvas.addEventListener('pointermove', e=>{ if(!pointerDown) return; addPointerPoint(e.offsetX, e.offsetY); e.preventDefault(); });
+      canvas.addEventListener('pointerup', e=>{ pointerDown=false; pointerPath.length=0; e.preventDefault(); });
+      canvas.addEventListener('pointercancel', ()=>{ pointerDown=false; pointerPath.length=0; });
 
-      function movePiece(playerIndex, steps){
-        // if at home (-1), must roll 6 to enter
-        const curPos = state.pos[playerIndex];
-        if(curPos===-1){
-          if(steps===6){
-            state.pos[playerIndex]=0; // enter at space 0 + player offset
-          } else {
-            info.textContent = 'برای ورود به بازی باید 6 بیندازید.';
-            state.rolling=false; diceBtn.disabled=false; nextTurn(); return;
+      // touch fallback: prevent scroll
+      canvas.addEventListener('touchstart', e=>{ e.preventDefault(); }, {passive:false});
+
+      // main loop
+      let lastTime = performance.now();
+      function loop(now){
+        const dt = now - lastTime; lastTime = now;
+        if(!running){ draw(); requestAnimationFrame(loop); return; }
+
+        // spawn
+        if(now - lastSpawn > spawnInterval){ spawn(now); }
+
+        // update fruits
+        for(let i=fruits.length-1;i>=0;i--){
+          const f = fruits[i];
+          if(f.hit){
+            // update shards
+            for(let s of f.shards){ s.vy += 0.14; s.x += s.vx; s.y += s.vy; s.life -= 1; }
+            if(f.shards.length && f.shards.every(s=>s.life<=0)) fruits.splice(i,1);
+            continue;
           }
-        } else {
-          const next = curPos + steps;
-          // check finish condition: if next >= spaces -> finish
-          if(next >= spaces){
-            state.finished[playerIndex]=true;
-            state.pos[playerIndex]=spaces-1; // put on last space visually
-            placePieceOnSpace(playerIndex, state.pos[playerIndex]);
-            info.textContent = 'بازیکن ' + (playerIndex+1) + ' دور کامل زد و بیرون آمد — برنده!';
-            diceBtn.disabled=true; // pause
-            // highlight winner and stop game
-            pieces[playerIndex].style.transform = 'translate(-50%,-50%) scale(1.18)';
-            return;
-          } else {
-            state.pos[playerIndex] = next;
-          }
-        }
 
-        // adjust position with player-specific starting offset so each player starts at different place on loop
-        const offset = playerIndex * Math.floor(spaces/4);
-        const effectivePos = (state.pos[playerIndex] + offset) % spaces;
-        placePieceOnSpace(playerIndex, effectivePos);
+          f.vy += f.ay; f.x += f.vx; f.y += f.vy;
 
-        // if landed on opponent, send them home
-        for(let i=0;i<4;i++){
-          if(i===playerIndex) continue;
-          if(state.pos[i]>=0){
-            const off = (state.pos[i] + i*Math.floor(spaces/4))%spaces;
-            if(off === effectivePos){
-              state.pos[i] = -1; // send home
-              placePieceOnSpace(i, -1);
-              info.textContent += ` و مهرهٔ بازیکن ${i+1} برگردانده شد.`;
+          // out of screen -> remove
+          if(f.y - f.r > canvas.height/devicePixelRatio + 60){ fruits.splice(i,1); continue; }
+
+          // check slice with pointer path
+          if(pointerPath.length>1){
+            for(let p=0;p<pointerPath.length-1;p++){
+              const a = pointerPath[p], b = pointerPath[p+1];
+              if(segmentCircle(a.x, a.y, b.x, b.y, f.x, f.y, f.r)){
+                // sliced!
+                f.hit = true;
+                createShards(f, f.x, f.y);
+                // scoring
+                if(f.type==='bomb'){ score = Math.max(0, score - 20); }
+                else if(f.type==='roz'){ score += 100; flashRozMessage(); }
+                else score += 10;
+                scoreEl.textContent = score;
+                break;
+              }
             }
           }
         }
 
-        // after moving, unlock next player's turn
-        state.rolling=false;
-        diceBtn.disabled=false;
-        // simple rule: if rolled 6 they get another turn
-        if(steps!==6) nextTurn(); else { info.textContent += ' (6 زد — یک نوبت دیگر)'; }
+        // update shards life for fruits that are hit
+        for(const f of fruits){ if(f.hit){ f.shards = f.shards.filter(s=>s.life>0); }}
+
+        // decrease timer
+        // use dt to reduce time smoothly
+        timeLeft -= dt/1000;
+        if(timeLeft <= 0){ timeLeft = 0; running=false; showOverlay(); }
+        timeEl.textContent = Math.ceil(timeLeft);
+
+        draw();
+        requestAnimationFrame(loop);
       }
 
-      // AI: when it's not player 0 (human), auto-roll after short delay
-      function autoPlayIfNeeded(){
-        if(state.cur===0 || state.finished[state.cur]) return; // human is player 0
-        setTimeout(()=>{
-          // simulate click
-          rollDiceForCurrent();
-        }, 700 + Math.random()*700);
+      function draw(){
+        // clear
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        // background subtle
+        ctx.fillStyle = 'rgba(250,252,255,0.35)'; ctx.fillRect(0,0,canvas.width/devicePixelRatio,canvas.height/devicePixelRatio);
+
+        // draw fruits
+        for(const f of fruits){ if(!f.hit) drawFruit(f); else {
+          // draw shards
+          for(const s of f.shards){ ctx.fillStyle = s.col; ctx.beginPath(); ctx.arc(s.x, s.y, 3,0,Math.PI*2); ctx.fill(); }
+        }}
+
+        // draw pointer path
+        if(pointerPath.length>1){ ctx.strokeStyle='rgba(255,255,255,0.92)'; ctx.lineWidth=6; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(pointerPath[0].x, pointerPath[0].y);
+          for(let i=1;i<pointerPath.length;i++) ctx.lineTo(pointerPath[i].x, pointerPath[i].y);
+          ctx.stroke();
+        }
       }
 
-      // attach click
-      diceBtn.addEventListener('click', ()=>{
-        if(state.cur!==0) return; // only allow human when their turn
-        rollDiceForCurrent();
-      });
+      // special roz message
+      let rozMsgTimer = 0;
+      function flashRozMessage(){ rozMsgTimer = 60; }
 
-      // initialize UI positions
-      for(let i=0;i<4;i++){ placePieceOnSpace(i, -1); }
-      updateUI();
+      // overlay
+      function showOverlay(){ overlay.classList.add('show'); overlayTitle.textContent = 'آفرین!'; overlayText.textContent = `امتیاز شما ${score} — برای مدیریت بهتر کسب‌وکار، اپ روزنامچه را نصب کنید.`; }
 
-      // game loop watcher for AI turns
-      const watcher = setInterval(()=>{
-        if(!state.rolling && state.cur!==0 && !state.finished[state.cur]){
-          autoPlayIfNeeded();
-        }
-      },300);
+      // start
+      requestAnimationFrame(loop);
 
-      // handle window resize to reposition pieces using computed board size
-      window.addEventListener('resize', ()=>{
-        // recompute center and points based on current element size
-        const rect = board.getBoundingClientRect();
-        const scale = rect.width/400; // we designed on 400 viewBox
-        // recompute using bounding box
-        const newCx = rect.width/2; const newCy = rect.height/2; const newR = Math.min(rect.width,rect.height)/2 - 80;
-        // rebuild points
-        for(let i=0;i<spaces;i++){
-          const angle = (i / spaces) * Math.PI*2 - Math.PI/2;
-          const x = newCx + Math.cos(angle)*newR;
-          const y = newCy + Math.sin(angle)*newR;
-          spacePoints[i].x = x; spacePoints[i].y = y;
-        }
-        // reposition pieces
-        for(let i=0;i<4;i++){
-          const p = state.pos[i];
-          if(p<0) placePieceOnSpace(i,-1); else placePieceOnSpace(i, (p + i*Math.floor(spaces/4))%spaces);
-        }
-      });
+      // spawn rhythm control
+      setInterval(()=>{ if(spawnInterval>380) spawnInterval = Math.max(380, spawnInterval - 10); }, 5000);
 
-      // initial resize trigger
-      setTimeout(()=>{ window.dispatchEvent(new Event('resize')); },100);
+      // small tutorial auto-touch for first run
+      setTimeout(()=>{ // spawn a few fruits quickly so player sees
+        for(let i=0;i<3;i++) spawn(performance.now() + i*120);
+      },600);
+
+      // optional: clicking overlay restarts
+      overlay.addEventListener('click', ()=>{ overlay.classList.remove('show'); restart(); });
+
+      function restart(){ score=0; timeLeft=60; running=true; fruits.length=0; pointerPath.length=0; scoreEl.textContent=score; spawnInterval=700; lastSpawn=0; }
+
     })();
   </script>
 </body>
