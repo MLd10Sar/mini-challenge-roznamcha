@@ -95,6 +95,18 @@
       let timeLeft = 60; // seconds
       let running = true;
 
+      const sounds = {
+  slice: new Audio('slice.mp3'),
+  explosion: new Audio('explosion.mp3'),
+  sour: new Audio('sour.mp3'),
+  golden: new Audio('golden.mp3'),
+  gameover: new Audio('gameover.mp3')
+};
+
+// Optional: Set volume
+Object.values(sounds).forEach(sound => {
+  sound.volume = 0.4; // Softer, not too loud
+});
       function flashScreen(color, duration) {
   const flash = document.createElement('div');
   Object.assign(flash.style, {
@@ -151,7 +163,7 @@
         const t = Math.random();
         if(t < 0.08) return {type:'bomb'}; // bombs cause -points
         if(t < 0.15) return {type:'roz'}; // roznamcha special
-        const kinds = ['apple','orange','kiwi','banana','grape','melon', 'strawberry', 'pineapple', 'mango', 'cherry'];
+        const kinds = ['apple','orange','kiwi','banana','grape','melon', 'strawberry', 'pineapple', 'mango', 'cherry','lemon', 'golden'];
         return {type: kinds[Math.floor(Math.random()*kinds.length)]};
       }
 
@@ -197,12 +209,11 @@ if (f.type === 'bomb') {
       function drawFruit(fr){
         ctx.save();
         ctx.translate(fr.x,fr.y);
-        ctx.fillText('بمب ⚠️', 0, 0);
         // shadow
-         ctx.beginPath();
-  ctx.ellipse(0, fr.r + 8, fr.r * 0.9, fr.r * 0.35, 0, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(0,0,0,0.12)';
-  ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(0, fr.r + 8, fr.r * 0.9, fr.r * 0.35, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,0,0,0.12)';
+        ctx.fill();
 
         // body
          if (fr.type === 'bomb') {
@@ -217,7 +228,7 @@ if (f.type === 'bomb') {
     ctx.fillText('بمب', 0, 0);
   } else if (fr.type === 'roz') {
     // Roznamcha branded fruit (purple-green gradient)
-    const g = ctx.createLinearGradient(-fr.r, -fr.r, fr.r, fr.r);
+     const g = ctx.createLinearGradient(-fr.r, -fr.r, fr.r, fr.r);
     g.addColorStop(0, '#6c1aa8');
     g.addColorStop(1, '#10b981');
     ctx.beginPath();
@@ -229,6 +240,43 @@ if (f.type === 'bomb') {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('روزنامچه', 0, 0);
+  } else if (fr.type === 'banana') {
+    // Banana as ellipse
+     ctx.save();
+
+    // Rotate slightly for natural curve
+    ctx.rotate(-0.3); // slight tilt
+
+    // Draw banana body with curve
+    ctx.beginPath();
+    ctx.moveTo(-fr.r * 1.2, 0);
+    ctx.quadraticCurveTo(0, -fr.r * 0.8, fr.r * 1.2, 0); // top curve
+    ctx.quadraticCurveTo(0, fr.r * 0.4, -fr.r * 1.2, 0);   // bottom curve
+    ctx.fillStyle = '#facc15';
+    ctx.fill();
+
+    // Add subtle highlight
+    ctx.beginPath();
+    ctx.moveTo(-fr.r * 1.1, -2);
+    ctx.quadraticCurveTo(0, -fr.r * 0.6, fr.r * 1.0, -2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Add stem (small brown cap at top)
+    ctx.beginPath();
+    ctx.ellipse(0, -fr.r * 0.7, fr.r * 0.2, fr.r * 0.15, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#8B4513'; // SaddleBrown
+    ctx.fill();
+
+    // Label
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.font = '600 14px Vazirmatn,Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('موز', 0, fr.r * 0.3);
+
+    ctx.restore();
   } else {
     // Normal fruits with beautiful colors
     const colors = {
@@ -241,14 +289,20 @@ if (f.type === 'bomb') {
       strawberry: '#ec4899',   // 💖 Pink
       pineapple: '#fbbf24',   // 🟡 Golden yellow
       mango: '#f97316',       // 🟠 Bright orange
-      cherry: '#be123c'       // ❤️ Deep red
+      cherry: '#be123c',       // ❤️ Deep red
+      lemon: '#fde047',       // 🍋 Lemon yellow
+      golden: '#fbbf24'       // 🌟 Golden (we’ll override with gradient)
     };
     const col = colors[fr.type] || '#f97316'; // fallback to orange
+
+
+      // Normal circle fruits
 
     ctx.beginPath();
     ctx.arc(0, 0, fr.r, 0, Math.PI * 2);
     ctx.fillStyle = col; // ✅ THIS MUST BE SET BEFORE FILL
     ctx.fill();
+    
 
     // Draw label
     ctx.fillStyle = 'rgba(255,255,255,0.9)';
@@ -267,6 +321,8 @@ switch(fr.type) {
   case 'pineapple': label = 'آناناس'; break;
   case 'mango': label = 'ام'; break;
   case 'cherry': label = 'گیلاس'; break;
+  case 'lemon': label = 'لیمو 🍋'; break;       // 🍋
+  case 'golden': label = 'طلایی 🌟'; break;     // 🌟
 }
     ctx.fillText(label, 0, 0);
   }
@@ -343,9 +399,26 @@ switch(fr.type) {
                 f.hit = true;
                 createShards(f, f.x, f.y);
                 // scoring
-                if(f.type==='bomb'){ score = Math.max(0, score - 20);flashScreen('#ff4444', 200); shakeScreen(8, 300);  }
-                else if(f.type==='roz'){ score += 100; flashRozMessage(); }
-                else score += 10;
+                if(f.type==='bomb'){
+  score = Math.max(0, score - 20);
+  flashScreen('#ff4444', 200);
+  sounds.explosion.cloneNode().play().catch(e=>console.log("Sound failed"));
+} else if(f.type==='lemon'){
+  score = Math.max(0, score - 5);
+  flashScreen('#ffff00', 150);
+  sounds.sour.cloneNode().play().catch(e=>console.log("Sound failed"));
+} else if(f.type==='golden'){
+  score += 50;
+  flashScreen('#ffd700', 300);
+  sounds.golden.cloneNode().play().catch(e=>console.log("Sound failed"));
+} else if(f.type==='roz'){
+  score += 100;
+  flashRozMessage();
+  sounds.slice.cloneNode().play().catch(e=>console.log("Sound failed")); // or special sound
+} else {
+  score += 10;
+  sounds.slice.cloneNode().play().catch(e=>console.log("Sound failed"));
+}
                 scoreEl.textContent = score;
                 break;
               }
@@ -365,6 +438,7 @@ switch(fr.type) {
         draw();
         requestAnimationFrame(loop);
       }
+  
 
       function draw(){
         // clear
@@ -390,7 +464,7 @@ switch(fr.type) {
       function flashRozMessage(){ rozMsgTimer = 60; }
 
       // overlay
-      function showOverlay(){ overlay.classList.add('show'); overlayTitle.textContent = 'آفرین!'; overlayText.textContent = `امتیاز شما ${score} — کامیاب باشی دوست عزیز اگر از بازی خوشت آمد و خواستی همایت کنی، برنامه روزنامچه را نصب و امتحان کن روزنامچه مثل کتابچه رسیدات یا لیجر است که تمام دخل و خرج و قرض و طلب و گدام خود را مدیریت میتانی هر جنس ره که ده دکان بیاری فقط یک دفعه راجستر میکنی در گدام و روزنامچه برایت تعقیب اش میکنه اوتومات و ها یادم نره که روزنامچه پیام هم برت روان میکنه هر روز اگه تب خوش باشه از فایده و نقص روزت میگه که چقده فایده کدی و چقدر ضرر کدی و ها میتانی لوگوی دکان ات ره هم در برنامه با نام و آدرس بانی که هر وقت خواستی ورق رسید یا پشت قرض بری بجای ورق عادی از لوگوی خودت مثل یک شرکت به طرف مقابل روان کنی یک سند رسمی و قوی پیش خود میداشته باشی به نام دکان ات که بسیار در آینده برت کار آمد میشه دیگه خدا یار و نگهدارت.`; }
+      function showOverlay(){ overlay.classList.add('show'); overlayTitle.textContent = 'آفرین!'; overlayText.textContent = `امتیاز شما ${score} — کامیاب باشی دوست عزیز اگر از بازی خوشت آمد و خواستی همایت کنی، برنامه روزنامچه را نصب و امتحان کن روزنامچه مثل کتابچه رسیدات یا لیجر است که تمام دخل و خرج و قرض و طلب و گدام خود را مدیریت میتانی هر جنس ره که ده دکان بیاری فقط یک دفعه راجستر میکنی در گدام و روزنامچه برایت تعقیب اش میکنه اوتومات و ها یادم نره که روزنامچه پیام هم برت روان میکنه هر روز اگه تب خوش باشه از فایده و نقص روزت میگه که چقده فایده کدی و چقدر ضرر کدی و ها میتانی لوگوی دکان ات ره هم در برنامه با نام و آدرس بانی که هر وقت خواستی ورق رسید یا پشت قرض بری بجای ورق عادی از لوگوی خودت مثل یک شرکت به طرف مقابل روان کنی یک سند رسمی و قوی پیش خود میداشته باشی به نام دکان ات که بسیار در آینده برت کار آمد میشه دیگه خدا یار و نگهدارت.`; sounds.gameover.play().catch(e=>console.log("Game over sound failed"));}
 
       // start
       requestAnimationFrame(loop);
@@ -408,6 +482,16 @@ setInterval(()=>{
       overlay.addEventListener('click', ()=>{ overlay.classList.remove('show'); restart(); });
 
       function restart(){ score=0; timeLeft=60; running=true; fruits.length=0; pointerPath.length=0; scoreEl.textContent=score; spawnInterval=700; lastSpawn=0; }
+
+      function unlockAudio() {
+        Object.values(sounds).forEach(sound => sound.play().catch(() => {}));
+        if (bgMusic) bgMusic.play().catch(() => {});
+        canvas.removeEventListener('touchstart', unlockAudio);
+        canvas.removeEventListener('click', unlockAudio);
+      }
+
+      canvas.addEventListener('touchstart', unlockAudio, { once: true });
+      canvas.addEventListener('click', unlockAudio, { once: true });
 
     })();
   </script>
