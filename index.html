@@ -44,28 +44,28 @@
 <body>
   <div class="container" role="application">
     <header>
-      <h1>بزن و برش بزن — دموی Roznamcha</h1>
+      <h1>میوه ها ره قطع کو — همکار و دوست شما روزنامچه</h1>
       <div class="score">امتیاز: <span id="score">0</span></div>
     </header>
 
     <div class="stage">
       <canvas id="gameCanvas" width="900" height="560" style="touch-action: none;" aria-label="بازی قطع میوه"></canvas>
 
-      <div class="watermark">روزنامچه</div>
+      <div class="watermark">روزنامچه دستیار مالی دکان شما</div>
 
-      <a class="cta" id="floatingCta" href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" target="_blank">📲 دانلود اپ Roznamcha</a>
+      <a class="cta" id="floatingCta" href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" target="_blank">📲 دانلود برنامه روزنامچه</a>
 
       <div class="overlay" id="overlay">
         <div class="card">
           <h2 id="overlayTitle">خسته نباشی!</h2>
-          <p id="overlayText">برای مدیریت حساب و گدام، اپ روزنامچه را نصب کن و کسب‌وکارت را ساده کن.</p>
-          <a id="overlayDownload" class="download-btn" href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" target="_blank">📥 دانلود اپ Roznamcha</a>
+          <p id="overlayText">کامیاب باشی دوست عزیز اگر از بازی خوشت آمد و خواستی همایت کنی، برنامه روزنامچه را نصب و امتحان کن روزنامچه مثل کتابچه رسیدات یا لیجر است که تمام دخل و خرج و قرض و طلب گدام خود را مدیریت میتانی و هر جنس ره که بیاری فقط یک دفعه راجسترش کو و روزنامچه برت تعقیب اش میکنه اوتومات و ها یادم نره که روزنامچه پیام هم برت روان میکنه هر روز اگه تب خوش باشه از فایده و نقص روزت میگه که چقده فایده کدی و چقدر ضرر کدی دیگه خدا یار و نگهدارت.</p>
+          <a id="overlayDownload" class="download-btn" href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" target="_blank">📥 دانلود اپ روزنامچه</a>
         </div>
       </div>
     </div>
 
     <div class="hud">
-      <div class="info">میوه‌های مخصوص Roznamcha را ببرید تا پیام ویژه ببینید.</div>
+      <div class="info">میوه‌های مخصوص روزنامچه را قطع کنید تا پیام ویژه ببینید.</div>
       <div class="timer">زمان: <span id="time">60</span>s</div>
     </div>
   </div>
@@ -151,7 +151,7 @@
         const t = Math.random();
         if(t < 0.08) return {type:'bomb'}; // bombs cause -points
         if(t < 0.15) return {type:'roz'}; // roznamcha special
-        const kinds = ['apple','orange','kiwi','banana','grape','melon'];
+        const kinds = ['apple','orange','kiwi','banana','grape','melon', 'strawberry', 'pineapple', 'mango', 'cherry'];
         return {type: kinds[Math.floor(Math.random()*kinds.length)]};
       }
 
@@ -161,7 +161,18 @@
   let vy = 0.5 + Math.random() * 1;
   const vx = (Math.random() - 0.5) * 1.5;
   const f = randomFruit(startX);
-const radius = (f.type === 'bomb') ? 40 : (f.type === 'roz' ? 50 : 34 + Math.random() * 8);  // Set gravity conditionally
+  let radius;
+if (f.type === 'bomb') {
+  radius = 40;
+} else if (f.type === 'roz') {
+  radius = 50;
+} else if (f.type === 'pineapple') {
+  radius = 42; // bigger!
+} else if (f.type === 'cherry') {
+  radius = 28; // smaller and cute
+} else {
+  radius = 34 + Math.random() * 8;
+}
   let gravity = 0.18; // default for normal fruits
   if (f.type === 'roz') {
     vy *= 0.7;       // slower initial fall for Roznamcha fruit
@@ -226,7 +237,11 @@ const radius = (f.type === 'bomb') ? 40 : (f.type === 'roz' ? 50 : 34 + Math.ran
       kiwi: '#86efac',
       banana: '#facc15',
       grape: '#7c3aed',
-      melon: '#34d399'
+      melon: '#34d399',
+      strawberry: '#ec4899',   // 💖 Pink
+      pineapple: '#fbbf24',   // 🟡 Golden yellow
+      mango: '#f97316',       // 🟠 Bright orange
+      cherry: '#be123c'       // ❤️ Deep red
     };
     const col = colors[fr.type] || '#f97316'; // fallback to orange
 
@@ -240,11 +255,19 @@ const radius = (f.type === 'bomb') ? 40 : (f.type === 'roz' ? 50 : 34 + Math.ran
     ctx.font = '600 15px Vazirmatn,Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    const label = fr.type === 'apple' ? 'سیب' :
-                  fr.type === 'orange' ? 'کینو' :
-                  fr.type === 'kiwi' ? 'کیوی' :
-                  fr.type === 'banana' ? 'کیله' :
-                  fr.type === 'grape' ? 'انگور' : 'خربزه';
+    let label = 'میوه';
+switch(fr.type) {
+  case 'apple': label = 'سیب'; break;
+  case 'orange': label = 'کینو'; break;
+  case 'kiwi': label = 'کیوی'; break;
+  case 'banana': label = 'کیله'; break;
+  case 'grape': label = 'انگور'; break;
+  case 'melon': label = 'خربوزه'; break;
+  case 'strawberry': label = 'توت فرنگی'; break;
+  case 'pineapple': label = 'آناناس'; break;
+  case 'mango': label = 'ام'; break;
+  case 'cherry': label = 'گیلاس'; break;
+}
     ctx.fillText(label, 0, 0);
   }
 
@@ -367,7 +390,7 @@ const radius = (f.type === 'bomb') ? 40 : (f.type === 'roz' ? 50 : 34 + Math.ran
       function flashRozMessage(){ rozMsgTimer = 60; }
 
       // overlay
-      function showOverlay(){ overlay.classList.add('show'); overlayTitle.textContent = 'آفرین!'; overlayText.textContent = `امتیاز شما ${score} — برای مدیریت بهتر کسب‌وکار، اپ روزنامچه را نصب کنید.`; }
+      function showOverlay(){ overlay.classList.add('show'); overlayTitle.textContent = 'آفرین!'; overlayText.textContent = `امتیاز شما ${score} — کامیاب باشی دوست عزیز اگر از بازی خوشت آمد و خواستی همایت کنی، برنامه روزنامچه را نصب و امتحان کن روزنامچه مثل کتابچه رسیدات یا لیجر است که تمام دخل و خرج و قرض و طلب و گدام خود را مدیریت میتانی هر جنس ره که ده دکان بیاری فقط یک دفعه راجستر میکنی در گدام و روزنامچه برایت تعقیب اش میکنه اوتومات و ها یادم نره که روزنامچه پیام هم برت روان میکنه هر روز اگه تب خوش باشه از فایده و نقص روزت میگه که چقده فایده کدی و چقدر ضرر کدی و ها میتانی لوگوی دکان ات ره هم در برنامه با نام و آدرس بانی که هر وقت خواستی ورق رسید یا پشت قرض بری بجای ورق عادی از لوگوی خودت مثل یک شرکت به طرف مقابل روان کنی یک سند رسمی و قوی پیش خود میداشته باشی به نام دکان ات که بسیار در آینده برت کار آمد میشه دیگه خدا یار و نگهدارت.`; }
 
       // start
       requestAnimationFrame(loop);
