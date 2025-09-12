@@ -24,7 +24,101 @@
     .hud .timer{font-weight:900;color:var(--accent)}
 
     /* floating download CTA */
-    .cta{position:absolute;left:16px;bottom:16px;z-index:60;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#fff;padding:12px 16px;border-radius:14px;font-weight:900;box-shadow:0 12px 30px rgba(12,20,40,.35);text-decoration:none}
+    .cta {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 60;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  color: #fff;
+  padding: 16px 24px;
+  border-radius: 18px;
+  font-weight: 900;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 30px rgba(108, 26, 168, 0.4);
+  animation: float 3s ease-in-out infinite;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+  min-width: 220px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.cta:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 12px 40px rgba(108, 26, 168, 0.6);
+  border-color: rgba(255,255,255,0.3);
+}
+
+.cta-icon {
+  font-size: 24px;
+  transition: transform 0.3s ease;
+}
+
+.cta:hover .cta-icon {
+  transform: scale(1.2) rotate(15deg);
+}
+
+.cta-text-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.cta-title {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1.3;
+}
+
+.cta-subtitle {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+
+.cta:hover .cta-subtitle {
+  opacity: 1;
+}
+
+/* Shimmer on hover */
+.cta-shimmer {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: skewX(-25deg);
+  transition: left 0.8s ease;
+}
+
+.cta:hover .cta-shimmer {
+  left: 100%;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .cta {
+    padding: 14px 18px;
+    min-width: 180px;
+    left: 12px;
+    bottom: 12px;
+  }
+  .cta-title { font-size: 14px; }
+  .cta-subtitle { font-size: 11px; }
+}
 
     /* overlay end screen */
     .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(3,7,18,0.45),rgba(3,7,18,0.65));backdrop-filter:blur(2px);z-index:80;display:none}
@@ -35,10 +129,26 @@
     .download-btn{display:inline-block;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:800}
 
     /* Roznamcha watermark */
-    .watermark{position:absolute;right:18px;top:18px;opacity:.08;font-size:42px;color:#000;pointer-events:none;font-weight:900}
+    .watermark {
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      opacity: .08;
+      font-size: 42px;
+      color: #000;
+      pointer-events: none;
+      font-weight: 900;
+      animation: pulse 4s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.08; transform: scale(1); }
+      50% { opacity: 0.15; transform: scale(1.05); }
+    }
+
 
     /* responsive */
-    @media (max-width:640px){ .stage{height:70vh} .watermark{font-size:30px} }
+    @media (max-width:640px){ .stage{height:70vh} .watermark{font-size:30px; animation-duration: 6s;} }
   </style>
 </head>
 <body>
@@ -53,13 +163,24 @@
 
       <div class="watermark">روزنامچه دستیار مالی دکان شما</div>
 
-      <a class="cta" id="floatingCta" href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" target="_blank">📲 دانلود برنامه روزنامچه</a>
+     <a class="cta" id="floatingCta"
+   href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk"
+   target="_blank"
+   rel="noopener noreferrer"
+   aria-label="دانلود برنامه روزنامچه برای مدیریت دکان">
+  <div class="cta-icon">📲</div>
+  <div class="cta-text-container">
+    <div class="cta-title" id="ctaTitle">روزنامچه ره نصب کو</div>
+    <div class="cta-subtitle" id="ctaSubtitle">دوکانت ره هوشمند کو!</div>
+  </div>
+  <div class="cta-shimmer"></div>
+</a>
 
       <div class="overlay" id="overlay">
         <div class="card">
           <h2 id="overlayTitle">خسته نباشی!</h2>
           <p id="overlayText">کامیاب باشی دوست عزیز اگر از بازی خوشت آمد و خواستی همایت کنی، برنامه روزنامچه را نصب و امتحان کن روزنامچه مثل کتابچه رسیدات یا لیجر است که تمام دخل و خرج و قرض و طلب گدام خود را مدیریت میتانی و هر جنس ره که بیاری فقط یک دفعه راجسترش کو و روزنامچه برت تعقیب اش میکنه اوتومات و ها یادم نره که روزنامچه پیام هم برت روان میکنه هر روز اگه تب خوش باشه از فایده و نقص روزت میگه که چقده فایده کدی و چقدر ضرر کدی دیگه خدا یار و نگهدارت.</p>
-          <a id="overlayDownload" class="download-btn" href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" target="_blank">📥 دانلود اپ روزنامچه</a>
+          <a id="overlayDownload" class="download-btn" href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk" target="_blank">📥 دانلود روزنامچه</a>
         </div>
       </div>
     </div>
@@ -167,37 +288,45 @@ Object.values(sounds).forEach(sound => {
         return {type: kinds[Math.floor(Math.random()*kinds.length)]};
       }
 
-   function spawn(now){
+  function spawn(now){
   lastSpawn = now;
   const startX = 40 + Math.random() * (canvas.width/devicePixelRatio - 80);
-  let vy = 0.5 + Math.random() * 1;
-  const vx = (Math.random() - 0.5) * 1.5;
+  let vy = 0.3 + Math.random() * 0.5; // 🐢 Start slower: 0.3 to 0.8
+  const vx = (Math.random() - 0.5) * 1.2; // Slight horizontal drift
   const f = randomFruit(startX);
+  
   let radius;
-if (f.type === 'bomb') {
-  radius = 40;
-} else if (f.type === 'roz') {
-  radius = 50;
-} else if (f.type === 'pineapple') {
-  radius = 42; // bigger!
-} else if (f.type === 'cherry') {
-  radius = 28; // smaller and cute
-} else {
-  radius = 34 + Math.random() * 8;
-}
-  let gravity = 0.18; // default for normal fruits
+  if (f.type === 'bomb') {
+    radius = 40;
+  } else if (f.type === 'roz') {
+    radius = 50;
+  } else if (f.type === 'pineapple') {
+    radius = 42;
+  } else if (f.type === 'cherry') {
+    radius = 28;
+  } else if (f.type === 'banana') {
+    radius = 38 + Math.random() * 4;
+  } else if (f.type === 'golden') {
+    radius = 38;
+  } else if (f.type === 'lemon') {
+    radius = 30;
+  } else {
+    radius = 34 + Math.random() * 8;
+  }
+
+  let gravity = 0.12; // 🐢 Reduced from 0.18 → much more playable
   if (f.type === 'roz') {
-    vy *= 0.7;       // slower initial fall for Roznamcha fruit
-    gravity = 0.12;  // override gravity to make it float gently
+    vy *= 0.6;       // Even slower for special fruit
+    gravity = 0.08;  // Very gentle float
   }
 
   fruits.push({
     x: startX,
-    y: -radius,
+    y: -radius,      // Spawn above top
     vx,
     vy,
     ax: 0,
-    ay: gravity,     // ✅ This is where you "pass" it — just use the variable!
+    ay: gravity,
     r: radius,
     type: f.type,
     spawned: now,
@@ -274,7 +403,7 @@ if (f.type === 'bomb') {
     ctx.font = '600 14px Vazirmatn,Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('موز', 0, fr.r * 0.3);
+    ctx.fillText('کیله', 0, fr.r * 0.3);
 
     ctx.restore();
   } else {
@@ -482,6 +611,36 @@ setInterval(()=>{
       overlay.addEventListener('click', ()=>{ overlay.classList.remove('show'); restart(); });
 
       function restart(){ score=0; timeLeft=60; running=true; fruits.length=0; pointerPath.length=0; scoreEl.textContent=score; spawnInterval=700; lastSpawn=0; }
+
+      // Auto-rotate CTA messages every 5 seconds
+const ctaMessages = [
+  { title: "همیالی روزنامچه رو نصب کو رفیق", subtitle: "دوکانت ره هوشمند کو مثل یک محاسب!" },
+  { title: "روزنامچه همیشه کنارت هست", subtitle: "هر صبح فایده و ضرر دوکانت رو برت میگه!" },
+  { title: "لوگوی دوکانت ره بساز!", subtitle: "حرفه‌ای کار کو با روزنامچه 🎯" },
+  { title: "دیگه فراموش نکو چیزی ره!", subtitle: "روزنامچه همکار و در خدمت ات ⏰" },
+  { title: "مدیریت قرض و طلب با یک کلیک!", subtitle: "دیگه کسی پیسه ته نمیبره 😊" }
+];
+
+let ctaMsgIndex = 0;
+const ctaTitleEl = document.getElementById('ctaTitle');
+const ctaSubtitleEl = document.getElementById('ctaSubtitle');
+
+function rotateCtaMessage() {
+  ctaMsgIndex = (ctaMsgIndex + 1) % ctaMessages.length;
+  const msg = ctaMessages[ctaMsgIndex];
+  ctaTitleEl.style.opacity = 0;
+  ctaSubtitleEl.style.opacity = 0;
+  
+  setTimeout(() => {
+    ctaTitleEl.textContent = msg.title;
+    ctaSubtitleEl.textContent = msg.subtitle;
+    ctaTitleEl.style.opacity = 1;
+    ctaSubtitleEl.style.opacity = 1;
+  }, 300);
+}
+
+// Start rotating every 5 seconds
+setInterval(rotateCtaMessage, 5000);
 
       function unlockAudio() {
         Object.values(sounds).forEach(sound => sound.play().catch(() => {}));
