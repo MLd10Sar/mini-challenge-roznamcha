@@ -22,6 +22,21 @@
     .hud{display:flex;gap:12px;align-items:center;padding:12px 18px;border-top:1px solid #eef2f7;background:linear-gradient(180deg,#ffffff,#f8fafc)}
     .hud .info{flex:1;color:#24303a;font-weight:700}
     .hud .timer{font-weight:900;color:var(--accent)}
+      .creator-signature strong {
+      background: linear-gradient(90deg, #6c1aa8, #10b981, #6c1aa8);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: var(--accent);
+      font-weight: 900;
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
 
     /* floating download CTA */
     .cta {
@@ -149,6 +164,43 @@
 
     /* responsive */
     @media (max-width:640px){ .stage{height:70vh} .watermark{font-size:30px; animation-duration: 6s;} }
+     /* Permanent BHMN Signature — Below Game Over Card */
+    .bhmn-signature {
+      position: absolute;
+      bottom: 60px; /* Above CTA button */
+      left: 50%;
+      transform: translateX(-50%) translateY(30px);
+      opacity: 0;
+      z-index: 85;
+      pointer-events: none;
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .bhmn-signature.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .bhmn-signature strong {
+      font-size: 24px;
+      font-weight: 900;
+      background: linear-gradient(90deg, #6c1aa8, #10b981);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: var(--accent);
+      text-shadow: 0 0 8px rgba(108, 26, 168, 0.3);
+    }
+
+    /* Gentle pulse */
+    .bhmn-signature.show strong {
+      animation: bhmnPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes bhmnPulse {
+      0%, 100% { text-shadow: 0 0 8px rgba(108, 26, 168, 0.3); }
+      50% { text-shadow: 0 0 16px rgba(16, 185, 129, 0.6); }
+    }
   </style>
 </head>
 <body>
@@ -161,7 +213,7 @@
     <div class="stage">
       <canvas id="gameCanvas" width="900" height="560" style="touch-action: none;" aria-label="بازی قطع میوه"></canvas>
 
-      <div class="watermark">روزنامچه دستیار مالی دکان شما</div>
+      <div class="watermark">روزنامچه دستیار مالی دوکان شما</div>
 
      <a class="cta" id="floatingCta"
    href="https://github.com/MLd10Sar/Esmat/releases/download/v1.0.0/app-release.apk"
@@ -593,7 +645,23 @@ switch(fr.type) {
       function flashRozMessage(){ rozMsgTimer = 60; }
 
       // overlay
-      function showOverlay(){ overlay.classList.add('show'); overlayTitle.textContent = 'آفرین!'; overlayText.textContent = `امتیاز شما ${score} — کامیاب باشی دوست عزیز اگر از بازی خوشت آمد و خواستی همایت کنی، برنامه روزنامچه را نصب و امتحان کن روزنامچه مثل کتابچه رسیدات یا لیجر است که تمام دخل و خرج و قرض و طلب و گدام خود را مدیریت میتانی هر جنس ره که ده دکان بیاری فقط یک دفعه راجستر میکنی در گدام و روزنامچه برایت تعقیب اش میکنه اوتومات و ها یادم نره که روزنامچه پیام هم برت روان میکنه هر روز اگه تب خوش باشه از فایده و نقص روزت میگه که چقده فایده کدی و چقدر ضرر کدی و ها میتانی لوگوی دکان ات ره هم در برنامه با نام و آدرس بانی که هر وقت خواستی ورق رسید یا پشت قرض بری بجای ورق عادی از لوگوی خودت مثل یک شرکت به طرف مقابل روان کنی یک سند رسمی و قوی پیش خود میداشته باشی به نام دکان ات که بسیار در آینده برت کار آمد میشه دیگه خدا یار و نگهدارت.`; sounds.gameover.play().catch(e=>console.log("Game over sound failed"));}
+      function showOverlay(){ overlay.classList.add('show'); overlayTitle.textContent = 'آفرین!'; overlayText.textContent = `امتیاز شما ${score} — کامیاب باشی دوست عزیز اگر از بازی خوشت آمد و خواستی همایت کنی، برنامه روزنامچه را نصب و امتحان کن روزنامچه مثل کتابچه رسیدات یا لیجر است که تمام دخل و خرج و قرض و طلب و گدام خود را مدیریت میتانی هر جنس ره که ده دکان بیاری فقط یک دفعه راجستر میکنی در گدام و روزنامچه برایت تعقیب اش میکنه اوتومات و ها یادم نره که روزنامچه پیام هم برت روان میکنه هر روز اگه تب خوش باشه از فایده و نقص روزت میگه که چقده فایده کدی و چقدر ضرر کدی و ها میتانی لوگوی دکان ات ره هم در برنامه با نام و آدرس بانی که هر وقت خواستی ورق رسید یا پشت قرض بری بجای ورق عادی از لوگوی خودت مثل یک شرکت به طرف مقابل روان کنی یک سند رسمی و قوی پیش خود میداشته باشی به نام دکان ات که بسیار در آینده برت کار آمد میشه دیگه خدا یار و نگهدارت.`; sounds.gameover.play().catch(e=>console.log("Game over sound failed"));
+    
+        // ============= PERMANENT BHMN SIGNATURE =============
+        const existingSig = document.querySelector('.bhmn-signature');
+        if (existingSig) existingSig.remove();
+
+        const bhmnSignature = document.createElement('div');
+        bhmnSignature.className = 'bhmn-signature';
+        bhmnSignature.innerHTML = '✨ ساخته شده توسط <strong>BHMN</strong>';
+        document.querySelector('.stage').appendChild(bhmnSignature);
+
+        setTimeout(() => {
+          bhmnSignature.classList.add('show');
+          if (sounds.slice) sounds.slice.cloneNode().play().catch(() => {});
+        }, 1000);
+        // ============= END BHMN SIGNATURE =============
+  }
 
       // start
       requestAnimationFrame(loop);
