@@ -22,14 +22,7 @@
     .hud{display:flex;gap:12px;align-items:center;padding:12px 18px;border-top:1px solid #eef2f7;background:linear-gradient(180deg,#ffffff,#f8fafc)}
     .hud .info{flex:1;color:#24303a;font-weight:700}
     .hud .timer{font-weight:900;color:var(--accent)}
-    .creator-signature strong {
-  background: linear-gradient(90deg, #6c1aa8, #10b981);
-  -webkit-background-clip: text;
-  background-clip: text; /* ✅ Standard property for compatibility */
-  -webkit-text-fill-color: transparent;
-  color: transparent; /* ✅ Fallback for non-WebKit browsers */
-  font-weight: 900;
-}
+  
 
     /* floating download CTA */
     .cta {
@@ -157,6 +150,42 @@
 
     /* responsive */
     @media (max-width:640px){ .stage{height:70vh} .watermark{font-size:30px; animation-duration: 6s;} }
+     /* Permanent BHMN Signature — Below Game Over Card */
+    .bhmn-signature {
+      position: absolute;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%) translateY(30px);
+      opacity: 0;
+      z-index: 85;
+      pointer-events: none;
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .bhmn-signature.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .bhmn-signature strong {
+      font-size: 24px;
+      font-weight: 900;
+      background: linear-gradient(90deg, #6c1aa8, #10b981);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: var(--accent);
+      text-shadow: 0 0 8px rgba(108, 26, 168, 0.3);
+    }
+
+    .bhmn-signature.show strong {
+      animation: bhmnPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes bhmnPulse {
+      0%, 100% { text-shadow: 0 0 8px rgba(108, 26, 168, 0.3); }
+      50% { text-shadow: 0 0 16px rgba(16, 185, 129, 0.6); }
+    }
   </style>
 </head>
 <body>
@@ -223,7 +252,54 @@
       let score = 0;
       let timeLeft = 60; // seconds
       let running = true;
+      window.audioUnlocked = false; 
 
+ // Auto-detect device type and handle audio unlock
+const isCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
+
+if (isCoarsePointer) {
+  // Mobile/touch device → show tap overlay
+  const tapOverlay = document.createElement('div');
+  tapOverlay.innerHTML = '👆 لمس کنید تا شروع شود<br><small>برای فعال‌سازی صدا</small>';
+  Object.assign(tapOverlay.style, {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    background: 'rgba(0,0,0,0.8)',
+    color: 'white',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '18px',
+    fontWeight: '800',
+    zIndex: 9999,
+    textAlign: 'center',
+    direction: 'rtl',
+    fontFamily: 'Vazirmatn, Arial',
+    lineHeight: '1.4'
+  });
+  document.querySelector('.stage').appendChild(tapOverlay);
+
+  function removeTapOverlay() {
+    tapOverlay.remove();
+    window.audioUnlocked = true;
+    if (sounds.slice) {
+    const sound = sounds.slice.cloneNode();
+    sound.volume = 0.05;
+    sound.play().catch(() => {});
+  }
+}
+
+  canvas.addEventListener('touchstart', removeTapOverlay, { once: true });
+  canvas.addEventListener('click', removeTapOverlay, { once: true });
+} else {
+  // Desktop/mouse device → auto-unlock audio
+  window.audioUnlocked = true;
+  console.log("Desktop detected — audio auto-unlocked");
+}
       const sounds = {
   slice: new Audio('slice.mp3'),
   explosion: new Audio('explosion.mp3'),
@@ -536,25 +612,25 @@ switch(fr.type) {
                 f.hit = true;
                 createShards(f, f.x, f.y);
                 // scoring
-                if(f.type==='bomb'){
+              if(f.type==='bomb'){
   score = Math.max(0, score - 20);
   flashScreen('#ff4444', 200);
-  sounds.explosion.cloneNode().play().catch(e=>console.log("Sound failed"));
+  if (window.audioUnlocked) sounds.explosion.cloneNode().play().catch(e=>console.log("Sound failed"));
 } else if(f.type==='lemon'){
   score = Math.max(0, score - 5);
   flashScreen('#ffff00', 150);
-  sounds.sour.cloneNode().play().catch(e=>console.log("Sound failed"));
+  if (window.audioUnlocked) sounds.sour.cloneNode().play().catch(e=>console.log("Sound failed"));
 } else if(f.type==='golden'){
   score += 50;
   flashScreen('#ffd700', 300);
-  sounds.golden.cloneNode().play().catch(e=>console.log("Sound failed"));
+  if (window.audioUnlocked) sounds.golden.cloneNode().play().catch(e=>console.log("Sound failed"));
 } else if(f.type==='roz'){
   score += 100;
   flashRozMessage();
-  sounds.slice.cloneNode().play().catch(e=>console.log("Sound failed")); // or special sound
+  if (window.audioUnlocked) sounds.slice.cloneNode().play().catch(e=>console.log("Sound failed"));
 } else {
   score += 10;
-  sounds.slice.cloneNode().play().catch(e=>console.log("Sound failed"));
+  if (window.audioUnlocked) sounds.slice.cloneNode().play().catch(e=>console.log("Sound failed"));
 }
                 scoreEl.textContent = score;
                 break;
@@ -602,20 +678,29 @@ switch(fr.type) {
 
       // overlay
       function showOverlay(){ overlay.classList.add('show'); overlayTitle.textContent = 'آفرین!'; overlayText.textContent = `امتیاز شما ${score} — کامیاب باشی دوست عزیز اگر از بازی خوشت آمد و خواستی همایت کنی، برنامه روزنامچه را نصب و امتحان کن روزنامچه مثل کتابچه رسیدات یا لیجر است که تمام دخل و خرج و قرض و طلب و گدام خود را مدیریت میتانی هر جنس ره که ده دکان بیاری فقط یک دفعه راجستر میکنی در گدام و روزنامچه برایت تعقیب اش میکنه اوتومات و ها یادم نره که روزنامچه پیام هم برت روان میکنه هر روز اگه تب خوش باشه از فایده و نقص روزت میگه که چقده فایده کدی و چقدر ضرر کدی و ها میتانی لوگوی دکان ات ره هم در برنامه با نام و آدرس بانی که هر وقت خواستی ورق رسید یا پشت قرض بری بجای ورق عادی از لوگوی خودت مثل یک شرکت به طرف مقابل روان کنی یک سند رسمی و قوی پیش خود میداشته باشی به نام دکان ات که بسیار در آینده برت کار آمد میشه دیگه خدا یار و نگهدارت.`; sounds.gameover.play().catch(e=>console.log("Game over sound failed"));
-      // ============= CREATOR SIGNATURE =============
-  const signature = document.createElement('div');
-  signature.innerHTML = '✨ ساخته شده توسط <strong class="creator-signature">BHMN</strong>';
-  signature.style.cssText = `
-    margin-top: 18px;
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 600;
-    text-align: center;
-    padding-top: 12px;
-    border-top: 1px solid rgba(0,0,0,0.1);
-  `;
-  document.querySelector('.card').appendChild(signature);
-  // ============= END SIGNATURE =============
+            // ============= PERMANENT BHMN SIGNATURE =============
+      // Remove any existing signature
+      const existingSig = document.querySelector('.bhmn-signature');
+      if (existingSig) existingSig.remove();
+
+      // Extra safety: remove any div containing "BHMN"
+      document.querySelectorAll('.stage > div').forEach(el => {
+        if (el.innerHTML.includes('BHMN')) {
+          el.remove();
+        }
+      });
+
+      // Create new signature
+      const bhmnSignature = document.createElement('div');
+      bhmnSignature.className = 'bhmn-signature';
+      bhmnSignature.innerHTML = '✨ ساخته شده با عشق توسط <strong>BHMN</strong>';
+      document.querySelector('.stage').appendChild(bhmnSignature);
+
+      setTimeout(() => {
+        bhmnSignature.classList.add('show');
+        if (sounds.slice) sounds.slice.cloneNode().play().catch(() => {});
+      }, 1000);
+      // ============= END BHMN SIGNATURE =============
 
   }
 
@@ -666,7 +751,7 @@ function rotateCtaMessage() {
 // Start rotating every 5 seconds
 setInterval(rotateCtaMessage, 5000);
 
-      function unlockAudio() {
+           function unlockAudio() {
         Object.values(sounds).forEach(sound => sound.play().catch(() => {}));
         if (bgMusic) bgMusic.play().catch(() => {});
         canvas.removeEventListener('touchstart', unlockAudio);
@@ -675,7 +760,6 @@ setInterval(rotateCtaMessage, 5000);
 
       canvas.addEventListener('touchstart', unlockAudio, { once: true });
       canvas.addEventListener('click', unlockAudio, { once: true });
-
     })();
   </script>
 </body>
