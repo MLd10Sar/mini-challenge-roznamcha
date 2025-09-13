@@ -279,7 +279,9 @@ if (isCoarsePointer) {
     textAlign: 'center',
     direction: 'rtl',
     fontFamily: 'Vazirmatn, Arial',
-    lineHeight: '1.4'
+    lineHeight: '1.4',
+    cursor: 'pointer', // 👈 Shows hand cursor
+    userSelect: 'none' // 👈 Prevents text selection
   });
   document.querySelector('.stage').appendChild(tapOverlay);
 
@@ -287,14 +289,15 @@ if (isCoarsePointer) {
     tapOverlay.remove();
     window.audioUnlocked = true;
     if (sounds.slice) {
-    const sound = sounds.slice.cloneNode();
-    sound.volume = 0.05;
-    sound.play().catch(() => {});
+      const sound = sounds.slice.cloneNode();
+      sound.volume = 0.05;
+      sound.play().catch(() => {});
+    }
   }
-}
 
-  canvas.addEventListener('touchstart', removeTapOverlay, { once: true });
-  canvas.addEventListener('click', removeTapOverlay, { once: true });
+  // 👇 Attach event listeners to the overlay itself, not just canvas
+  tapOverlay.addEventListener('touchstart', removeTapOverlay, { once: true });
+  tapOverlay.addEventListener('click', removeTapOverlay, { once: true });
 } else {
   // Desktop/mouse device → auto-unlock audio
   window.audioUnlocked = true;
