@@ -259,6 +259,8 @@ const isCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
 
 if (isCoarsePointer) {
   // Mobile/touch device → show tap overlay
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
   const tapOverlay = document.createElement('div');
   tapOverlay.innerHTML = '👆 لمس کنید تا شروع شود<br><small>برای فعال‌سازی صدا</small>';
   Object.assign(tapOverlay.style, {
@@ -288,6 +290,9 @@ if (isCoarsePointer) {
   function removeTapOverlay() {
     tapOverlay.remove();
     window.audioUnlocked = true;
+    if ('vibrate' in navigator) {
+      navigator.vibrate(50);
+    }
     if (sounds.slice) {
       const sound = sounds.slice.cloneNode();
       sound.volume = 0.05;
@@ -295,14 +300,25 @@ if (isCoarsePointer) {
     }
   }
 
-  // 👇 Attach event listeners to the overlay itself, not just canvas
+
+  // Attach to overlay itself
   tapOverlay.addEventListener('touchstart', removeTapOverlay, { once: true });
   tapOverlay.addEventListener('click', removeTapOverlay, { once: true });
 } else {
-  // Desktop/mouse device → auto-unlock audio
-  window.audioUnlocked = true;
-  console.log("Desktop detected — audio auto-unlocked");
+  // On Android/Desktop → auto-unlock or unlock on first interaction
+  window.audioUnlocked = !isCoarsePointer; // Auto-unlock on desktop
+  if (isCoarsePointer) {
+    // On Android → unlock on first canvas interaction
+    const unlockOnInteraction = () => {
+      window.audioUnlocked = true;
+      canvas.removeEventListener('touchstart', unlockOnInteraction);
+      canvas.removeEventListener('click', unlockOnInteraction);
+    };
+    canvas.addEventListener('touchstart', unlockOnInteraction, { once: true });
+    canvas.addEventListener('click', unlockOnInteraction, { once: true });
+  }
 }
+
       const sounds = {
   slice: new Audio('slice.mp3'),
   explosion: new Audio('explosion.mp3'),
